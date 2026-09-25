@@ -1,0 +1,57 @@
+---
+import Container from '@/components/ui/Container.astro';
+import type { Crumb } from '@/lib/navigation/breadcrumbs';
+
+interface Props {
+  crumbs: Crumb[];
+}
+
+const { crumbs } = Astro.props;
+---
+
+{
+  crumbs.length >= 2 && (
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <Container>
+        <ol class="breadcrumbs__list">
+          {crumbs.map((crumb) => (
+            <li class="breadcrumbs__item">
+              {crumb.isCurrent ? (
+                <span aria-current="page">{crumb.label}</span>
+              ) : (
+                <a href={crumb.href}>{crumb.label}</a>
+              )}
+            </li>
+          ))}
+        </ol>
+      </Container>
+    </nav>
+  )
+}
+
+<style>
+  .breadcrumbs {
+    border-block-end: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  .breadcrumbs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding-block: var(--space-3);
+    list-style: none;
+  }
+
+  .breadcrumbs__item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .breadcrumbs__item:not(:last-child)::after {
+    margin-inline-start: var(--space-2);
+    color: var(--color-text-muted);
+    content: '/';
+  }
+</style>

@@ -1,0 +1,93 @@
+---
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+/**
+ * The single clip that sits beside the home page's value-proposition copy.
+ *
+ * Deliberately one video rather than a gallery: `VideoGallery` owns its own
+ * heading, intro and grid, all of which would compete with the band heading
+ * this clip sits under. The clip itself is chosen by the caller so the choice
+ * stays visible on the page rather than buried in a component.
+ */
+interface Props {
+  /** Untransformed `public/video/…` URL — the pipeline does not process video. */
+  src: string;
+  poster: ImageMetadata;
+  title: string;
+  caption: string;
+}
+
+const { src, poster, title, caption } = Astro.props;
+
+const posterSrc = (
+  await getImage({ src: poster, width: 900, format: 'webp', quality: 80 })
+).src;
+
+// Shape comes from the poster, never from a typed number — the same reasoning
+// as `VideoGallery`. Era-Sure's current footage is portrait phone video; a
+// landscape replacement has to sit correctly here without a CSS change, and
+// only the poster knows which one it is.
+const isPortrait = poster.height > poster.width;
+---
+
+<figure
+  class:list={['value-video', isPortrait && 'value-video--portrait']}
+  data-video-orientation={isPortrait ? 'portrait' : 'landscape'}
+>
+  {
+    /* `muted` is belt to the braces of the conversion script's `-an`: the
+      published MP4s carry no audio track at all (ARCHI §14). */
+  }
+  <video
+    controls
+    muted
+    preload="none"
+    playsinline
+    poster={posterSrc}
+    width={poster.width}
+    height={poster.height}
+    aria-label={title}
+  >
+    <source src={src} type="video/mp4" />
+    <a href={src}>Download {title}</a>
+  </video>
+  <figcaption>{caption}</figcaption>
+</figure>
+
+<style>
+  .value-video {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 0;
+    margin: 0;
+  }
+
+  /* A portrait clip handed a full column stands roughly twice the height of the
+     copy beside it — measured at 1280px, 623px of video against 341px of text.
+     The cap is expressed as a width because that is the axis `width: 100%` and the
+     intrinsic aspect ratio control; 16rem is the width at which this 506x900 clip
+     lands just under 29rem tall. A landscape clip is left to fill its track,
+     which is the shape that track was sized for. */
+  .value-video--portrait {
+    justify-self: center;
+    max-width: 16rem;
+  }
+
+  .value-video video {
+    display: block;
+    /* The poster and width/height attributes preserve the clip's own shape
+       without an inline style, which the production CSP blocks. */
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-inverted);
+  }
+
+  .value-video figcaption {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    overflow-wrap: anywhere;
+  }
+</style>

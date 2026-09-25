@@ -1,0 +1,327 @@
+---
+import SalesContactCard from '@/components/enquiry/SalesContactCard.astro';
+import Button from '@/components/ui/Button.astro';
+import Card from '@/components/ui/Card.astro';
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { buildContactDetails } from '@/lib/config/contact';
+import { buildSalesContactLinks } from '@/lib/config/sales-contacts';
+import { getBreadcrumbs } from '@/lib/navigation/breadcrumbs';
+import { siteConfig } from '@/site.config';
+
+const salesContacts = buildSalesContactLinks(siteConfig);
+const contactDetails = buildContactDetails(siteConfig);
+const breadcrumbs = getBreadcrumbs('/contact/');
+const quotationSteps = [
+  'We acknowledge receipt of the enquiry.',
+  'Any outstanding product specifications are confirmed.',
+  'Current pricing and availability are checked.',
+  'The quotation is sent by WhatsApp or email.',
+];
+---
+
+<BaseLayout
+  title={`Contact ${siteConfig.displayName}`}
+  description="Contact Era-Sure Renewables in Gauteng and KZN directly by WhatsApp, phone or email for solar and electrical equipment enquiries and nationwide delivery."
+  breadcrumbs={breadcrumbs}
+>
+  <Section surface="inverted" headingId="contact-heading">
+    <Container>
+      <div class="contact-intro">
+        <Eyebrow>Contact Era-Sure</Eyebrow>
+        <h1 id="contact-heading">Contact Era-Sure Renewables</h1>
+        <p>
+          Request a quotation online, or reach the Era-Sure sales team directly
+          by WhatsApp or phone.
+        </p>
+        {
+          contactDetails.responseNote && (
+            <p class="response-note">{contactDetails.responseNote}</p>
+          )
+        }
+        <div class="contact-intro__actions">
+          <Button href="/quote/">Request a quotation</Button>
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <Section surface="default">
+    <Container>
+      {
+        /* No eyebrow and no band heading here, deliberately. The two contacts
+          are this page's main content, so they are h2 directly under the h1
+          rather than nested under a heading that would only restate the h1. An
+          eyebrow with no heading beside it is a heading in disguise. */
+      }
+      <div class="contact-section contact-section--full">
+        <p class="section-intro">
+          Era-Sure works from bases in Gauteng and KwaZulu-Natal. Projects
+          elsewhere in South Africa are supported by the same team.
+        </p>
+        {
+          contactDetails.serviceAreas.length > 0 && (
+            <p class="section-intro">{`Delivery is arranged throughout ${contactDetails.serviceAreas.join(' and ')} through logistics partners.`}</p>
+          )
+        }
+        {
+          salesContacts.length > 0 ? (
+            <div class="contact-grid">
+              {salesContacts.map((contact) => (
+                <SalesContactCard {...contact} headingLevel={2} />
+              ))}
+            </div>
+          ) : (
+            <p class="contact-empty">Contact details are being confirmed.</p>
+          )
+        }
+      </div>
+    </Container>
+  </Section>
+
+  {
+    /* Every band on this page shares the one container, so all four align to a
+      single left rail. Prose still stops at `--measure` — a reading column that
+      does not run the full width is correct; a CARD GRID that does not is the
+      thing that read as stranded empty space. */
+  }
+
+  <Section surface="muted" headingId="details-heading">
+    <Container>
+      <div class="contact-section contact-section--full">
+        <Eyebrow>Contact information</Eyebrow>
+        <h2 id="details-heading">Email, business hours and social profile</h2>
+        <div class="detail-grid">
+          {
+            contactDetails.emails.length > 0 && (
+              <Card>
+                <h3>Email</h3>
+                <ul class="detail-list">
+                  {contactDetails.emails.map((detail) => (
+                    <li>
+                      <span>{detail.label}: </span>
+                      {detail.href ? (
+                        <a href={detail.href}>{detail.value}</a>
+                      ) : (
+                        detail.value
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )
+          }
+          {
+            contactDetails.socialLinks.length > 0 && (
+              <Card>
+                <h3>Social profiles</h3>
+                <ul class="social-list">
+                  {contactDetails.socialLinks.map((socialLink) => (
+                    <li>
+                      <a href={socialLink.href}>{socialLink.platform}</a>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )
+          }
+          {
+            (contactDetails.businessHours.length > 0 ||
+              contactDetails.supportNote) && (
+              <Card>
+                <h3>Business hours</h3>
+                {contactDetails.businessHours.length > 0 && (
+                  <dl class="hours-list">
+                    {contactDetails.businessHours.map((detail) => (
+                      <div>
+                        <dt>{detail.label}</dt>
+                        <dd>{detail.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                {contactDetails.supportNote && (
+                  <p>{contactDetails.supportNote}</p>
+                )}
+              </Card>
+            )
+          }
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  {
+    /* The former "Regional contacts" band was removed in favour of the contact
+      cards above: each card already carries its own Region and Hub, and the
+      footer renders the same "Regional bases" list site-wide. The one line it
+      contributed — delivery coverage — moved up to the cards band. */
+  }
+
+  <Section surface="default" headingId="next-heading">
+    <Container>
+      <div class="contact-section contact-section--full">
+        <Eyebrow>Quotation process</Eyebrow>
+        <h2 id="next-heading">After your enquiry is submitted</h2>
+        {
+          /* `list-style: none` drops the list role in Safari/VoiceOver, so it
+            is restored explicitly. The step number is real markup rather than a
+            CSS counter, because generated content is not reliably announced. */
+        }
+        <ol class="next-steps" role="list">
+          {
+            quotationSteps.map((step, index) => (
+              <Card as="li">
+                <span class="step-number" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <p>{step}</p>
+              </Card>
+            ))
+          }
+        </ol>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .contact-intro,
+  .contact-section {
+    display: grid;
+    gap: var(--space-4);
+    max-width: var(--measure);
+  }
+
+  /* The cards band is the exception to the measure: `--measure` is a reading
+     width for prose, and clamping a two-column card grid to it stranded 625px
+     of empty band to the right of the cards. */
+  .contact-section--full {
+    max-width: none;
+  }
+
+  .contact-intro h1,
+  .contact-section h2,
+  .contact-section h3 {
+    overflow-wrap: anywhere;
+  }
+
+  .contact-intro__actions {
+    margin-block-start: var(--space-2);
+  }
+
+  .section-intro {
+    max-width: var(--measure);
+  }
+
+  .response-note,
+  .contact-empty {
+    margin-block-start: var(--space-2);
+  }
+
+  .contact-grid {
+    display: grid;
+    /* Same gap as `.detail-grid` so the two grids share column positions. */
+    gap: var(--space-4);
+    margin-block-start: var(--space-2);
+  }
+
+  /* The detail groups and the process steps were plain text stacked on a flat
+     band, directly below the bordered contact cards. They are `Card` now, so
+     only the layout of the grids belongs here. */
+  .detail-grid,
+  .next-steps {
+    display: grid;
+    gap: var(--space-4);
+    margin-block-start: var(--space-2);
+  }
+
+  .detail-grid h3 {
+    font-size: var(--font-size-lg);
+  }
+
+  .detail-list,
+  .social-list {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .detail-list li,
+  .detail-list a,
+  .social-list a {
+    overflow-wrap: anywhere;
+  }
+
+  .hours-list {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .hours-list > div {
+    min-width: 0;
+  }
+
+  .hours-list dt {
+    font-weight: 600;
+  }
+
+  .hours-list dd {
+    color: var(--color-text-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .social-list a {
+    font-weight: 600;
+  }
+
+  .next-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .next-steps p {
+    overflow-wrap: anywhere;
+  }
+
+  .step-number {
+    display: grid;
+    width: 2.5rem;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-tint);
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  @media (min-width: 48rem) {
+    .contact-grid,
+    .next-steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .detail-grid {
+      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .next-steps {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    /* Three columns for two cards: the pair then sits on the same column
+       rhythm as the three detail cards below rather than stretching to half a
+       very wide band each. */
+    .contact-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

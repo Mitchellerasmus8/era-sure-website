@@ -1,0 +1,173 @@
+---
+import { getCollection } from 'astro:content';
+import CategoryCard from '@/components/catalogue/CategoryCard.astro';
+import Button from '@/components/ui/Button.astro';
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import {
+  buildCategoryCards,
+  sortCategories,
+  validateCategories,
+} from '@/lib/catalogue/categories';
+import { filterVisibleEntries } from '@/lib/catalogue/visibility';
+import { getPrimaryCta } from '@/lib/navigation/cta';
+import { getBreadcrumbs } from '@/lib/navigation/breadcrumbs';
+import { buildCategoryListStructuredData } from '@/lib/seo/structured-data';
+import { siteConfig } from '@/site.config';
+
+const entries = await getCollection('categories');
+const visible = filterVisibleEntries(entries, process.env.CONTEXT);
+validateCategories(visible);
+const sorted = sortCategories(visible);
+const categoryCards = buildCategoryCards(sorted);
+const categoryStructuredData = buildCategoryListStructuredData(
+  sorted.map((item) => ({
+    name: item.data.name,
+    slug: item.data.slug,
+    summary: item.data.summary,
+  })),
+  siteConfig.siteUrl,
+);
+const primaryCta = getPrimaryCta();
+const breadcrumbs = getBreadcrumbs('/products/');
+---
+
+<BaseLayout
+  title={`Electrical & Solar Products | ${siteConfig.displayName}`}
+  description="Browse renewable-energy and electrical equipment for South African trade projects: solar cables, cable management, switchgear, custom combiners and consumables."
+  breadcrumbs={breadcrumbs}
+  structuredData={categoryStructuredData}
+>
+  <Section surface="inverted" headingId="products-heading">
+    <Container>
+      <header class="products-intro">
+        <Eyebrow>Products</Eyebrow>
+        <h1 id="products-heading">
+          Equipment for any project. Supplied on time. Every time.
+        </h1>
+        <p class="products-intro__lede">
+          Era-Sure provides equipment across the following product categories
+          for renewable-energy, electrical and backup-power projects.
+        </p>
+      </header>
+    </Container>
+  </Section>
+
+  {
+    /* No heading on this band, so no `headingId`. The h1 above already names
+      what the grid contains, and a second heading would either restate it or
+      push every card from h2 to h3 for no gain — the card headings are the
+      page's real second level. */
+  }
+  <Section surface="muted">
+    <Container>
+      {
+        categoryCards.length === 0 ? (
+          <p class="products-empty" role="status">
+            No product categories are currently publishable. Contact Era-Sure to
+            discuss your requirements.
+          </p>
+        ) : (
+          <ul class="category-grid">
+            {categoryCards.map((card) => (
+              <li>
+                <CategoryCard {...card} />
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </Container>
+  </Section>
+
+  {
+    primaryCta && (
+      <Section surface="inverted" headingId="products-cta-heading">
+        <Container width="narrow">
+          <div class="products-cta">
+            <h2 id="products-cta-heading">
+              Request a quotation for your requirements
+            </h2>
+            <p>
+              Submit the required products, quantities and part numbers. We will
+              confirm current pricing.
+            </p>
+            <Button href={primaryCta.href}>{primaryCta.label}</Button>
+          </div>
+        </Container>
+      </Section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  /* Was a white bordered panel on a muted band, which made this page's masthead
+     the only one on the site that opened with a card — it read as a component
+     dropped onto the page rather than as the top of it. It is now the same
+     inverted band the home and contact pages open with, so the four entry
+     points share one masthead treatment and the brand's teal-and-lime gradient
+     appears on this page too. */
+  .products-intro {
+    display: grid;
+    gap: var(--space-4);
+    max-width: var(--measure);
+  }
+
+  .products-intro h1 {
+    overflow-wrap: anywhere;
+  }
+
+  .products-intro__lede {
+    font-size: var(--font-size-lg);
+  }
+
+  /* The rule was `--color-accent` on `--color-surface`: a dark teal edge and a
+     near-white fill, neither of which survives the move onto the inverted band.
+     The lime is the dark-surface accent this palette is built around — the same
+     one the home hero's proof strip uses — and the fill is a wash of the band's
+     own colour rather than a second surface sitting on top of it. */
+  .products-intro__note {
+    margin-block-start: var(--space-1);
+    padding: var(--space-3) var(--space-4);
+    border-inline-start: 0.2rem solid var(--color-brand-green);
+    border-radius: var(--radius-sm);
+    background: rgb(255 255 255 / 6%);
+    font-size: var(--font-size-sm);
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .category-grid li {
+    min-width: 0;
+  }
+
+  .products-empty {
+    max-width: var(--measure);
+  }
+
+  .products-cta {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 48rem) {
+    .category-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .category-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

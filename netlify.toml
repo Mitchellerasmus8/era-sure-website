@@ -1,0 +1,96 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24.19.0"
+
+# Astro fingerprints these asset URLs; changed assets receive new names.
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Preserve the three renewable-led category URLs now represented by the
+# questionnaire's original renewable-energy equipment grouping.
+[[redirects]]
+  from = "/products/solar-panels/"
+  to = "/products/renewable-energy-equipment/"
+  status = 301
+
+[[redirects]]
+  from = "/products/inverters/"
+  to = "/products/renewable-energy-equipment/"
+  status = 301
+
+[[redirects]]
+  from = "/products/batteries-and-energy-storage/"
+  to = "/products/renewable-energy-equipment/"
+  status = 301
+
+# No apex-to-www rule appears here on purpose: `www.erasuretrading.co.za` is the
+# primary domain in Netlify, so Netlify issues the apex 301 itself. Verified.
+#
+# CORRECTION (2026-08-26): an earlier version of this comment also claimed
+# Netlify 301s the `*.netlify.app` subdomain to the primary domain. It does
+# NOT — that host returned 200 and served the whole site. It matters more now
+# than it did, because removing the site-wide X-Robots-Tag also removed the
+# only thing keeping that host out of search. Hence the rule below.
+[[redirects]]
+  from = "https://eclectic-snickerdoodle-89bb05.netlify.app/*"
+  to = "https://www.erasuretrading.co.za/:splat"
+  status = 301
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Redundant against `frame-ancestors 'none'` for any browser in use, but it
+    # costs one line and every security scanner still reports its absence.
+    X-Frame-Options = "DENY"
+
+    # The site requests no device capability at all. Denying them outright also
+    # denies them to anything ever embedded in the page.
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
+    Cross-Origin-Opener-Policy = "same-origin"
+
+    # ─────────────────────────────────────────────────────────────────────
+    # `includeSubDomains` is deliberately ABSENT, and `preload` with it.
+    #
+    # erasuretrading.co.za carries the company mailboxes. `includeSubDomains`
+    # would force HTTPS on every host in that zone for a year, including mail
+    # and autodiscover hosts nobody has inventoried. That is NOT reversible by
+    # editing this file — browsers keep the policy for the full max-age.
+    #
+    # Add it only once every subdomain of the zone is confirmed to serve
+    # HTTPS, and add `preload` some weeks after that, not at the same time.
+    # ─────────────────────────────────────────────────────────────────────
+    Strict-Transport-Security = "max-age=31536000"
+
+    # The site loads small self-hosted scripts and no third-party resources.
+    # This is inexpensive today and is painful to retrofit once
+    # analytics or an embedded map arrives. Widen it one directive at a time,
+    # in the feature that needs the source.
+    #
+    # PAIR with astro.config.mjs build.inlineStylesheets = "never". Changing
+    # that setting to "auto" would inline CSS and break styling under this CSP.
+    #
+    # Not verifiable locally: `astro preview` serves dist/ directly and applies
+    # nothing from this file. Confirm on a deploy preview.
+    Content-Security-Policy = "default-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+
+# ───────────────────────────────────────────────────────────────────────────
+# The site-wide `X-Robots-Tag = "noindex, nofollow"` that used to sit in the
+# block above is GONE, because the real domain is now configured and the site
+# is meant to be found. Do not reinstate it here.
+#
+# If a non-production deploy ever needs to be hidden, it is already handled,
+# and NOT by this file: headers in netlify.toml are global for all builds and
+# cannot be scoped to a deploy context no matter where they are declared. The
+# guard lives in `src/lib/seo/robots.ts`, which renders `noindex, nofollow`
+# into the page itself whenever Netlify's CONTEXT is not `production`.
+# ───────────────────────────────────────────────────────────────────────────

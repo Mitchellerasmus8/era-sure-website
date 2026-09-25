@@ -1,0 +1,508 @@
+---
+import { getCollection } from 'astro:content';
+import HeroVectorLogo from '@/components/brand/HeroVectorLogo.astro';
+import CategoryCard from '@/components/catalogue/CategoryCard.astro';
+import DeliveryHighlightCard from '@/components/deliveries/DeliveryHighlightCard.astro';
+import Button from '@/components/ui/Button.astro';
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import {
+  buildCategoryCards,
+  sortCategories,
+  validateCategories,
+} from '@/lib/catalogue/categories';
+import { filterVisibleEntries } from '@/lib/catalogue/visibility';
+import { isConfirmed } from '@/lib/config/phone';
+import {
+  selectFeaturedDeliveryHighlights,
+  validateDeliveryHighlights,
+  filterPublishableDeliveries,
+} from '@/lib/deliveries/highlights';
+import { getPrimaryCta } from '@/lib/navigation/cta';
+import { buildHomeStructuredData } from '@/lib/seo/structured-data';
+import { siteConfig } from '@/site.config';
+
+const entries = await getCollection('categories');
+const visibleCategories = filterVisibleEntries(entries, process.env.CONTEXT);
+validateCategories(visibleCategories);
+const sorted = sortCategories(visibleCategories);
+const categoryCards = buildCategoryCards(sorted);
+
+const deliveryEntries = filterPublishableDeliveries(
+  await getCollection('deliveries'),
+);
+validateDeliveryHighlights(deliveryEntries);
+const featuredDeliveries = selectFeaturedDeliveryHighlights(deliveryEntries);
+
+const primaryCta = getPrimaryCta();
+const serviceAreas = siteConfig.serviceAreas.filter(isConfirmed).join(', ');
+// The quote form's own band heading, so "Submit a BOQ" lands on the form rather
+// than at the top of a page whose purpose the visitor has already accepted.
+const boqFormAnchor = '/quote/#quote-form-heading';
+const homeStructuredData = buildHomeStructuredData(siteConfig);
+---
+
+<BaseLayout
+  title={`Electrical & Solar Supplier SA | ${siteConfig.displayName}`}
+  description={`Source electrical and renewable-energy equipment across ${serviceAreas || 'South Africa'}: solar cables, custom combiners, switchgear, enclosures and inverters.`}
+  structuredData={homeStructuredData}
+>
+  <Section surface="inverted" headingId="hero-heading">
+    <Container>
+      <div class="hero-shell">
+        <div class="hero">
+          <Eyebrow>Electrical & solar equipment · South Africa</Eyebrow>
+          <h1 id="hero-heading">
+            Electrical & solar supply, <span>simplified.</span>
+          </h1>
+          <p class="hero__intro">
+            Cables, switchgear and renewable-energy equipment for installers,
+            EPCs and electrical contractors. One supplier, one consolidated
+            quotation, delivered across South Africa.
+          </p>
+          <div class="hero__actions">
+            {
+              primaryCta && (
+                <Button href={primaryCta.href}>{primaryCta.label}</Button>
+              )
+            }
+            <Button href="/products/" variant="secondary"
+              >Explore our range</Button
+            >
+          </div>
+          <p class="hero__regional">
+            <a href="/contact/"
+              >Your team in Gauteng & KwaZulu-Natal <span aria-hidden="true"
+                >↗</span
+              ></a
+            >
+          </p>
+        </div>
+        <div class="hero-brand">
+          <HeroVectorLogo />
+        </div>
+      </div>
+      <ul class="proof-strip" aria-label="Era-Sure at a glance">
+        <li><strong>10+ years</strong><span>combined experience</span></li>
+        <li>
+          <strong>Nationwide</strong><span>delivery across South Africa</span>
+        </li>
+        <li>
+          <strong>One order</strong><span>for a full bill of materials</span>
+        </li>
+      </ul>
+    </Container>
+  </Section>
+
+  <Section surface="default" headingId="categories-heading">
+    <Container>
+      <div class="section-heading">
+        <Eyebrow>Product categories</Eyebrow>
+        <h2 id="categories-heading">Six ranges. One supply partner.</h2>
+        <p class="section-intro">
+          Browse the main product categories or submit a complete bill of
+          materials for pricing and availability.
+        </p>
+      </div>
+      {
+        categoryCards.length > 0 ? (
+          <ul class="category-grid">
+            {categoryCards.map((card) => (
+              <li>
+                {/* h3: these sit under the section's own h2. */}
+                <CategoryCard {...card} headingLevel={3} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="catalogue-empty" role="status">
+            Product categories are being prepared. Get in touch to discuss your
+            requirements.
+          </p>
+        )
+      }
+    </Container>
+  </Section>
+
+  {
+    /* No `Eyebrow` on this band or the BOQ band below, deliberately. Both carry
+      a client-written title with a sub-heading beneath it, which is already two
+      levels; an eyebrow would put a third label above a heading that does not
+      need labelling. Every other band on the page keeps its eyebrow. */
+  }
+  <Section surface="default" headingId="value-heading">
+    <Container>
+      <div class="value-prop">
+        <div class="value-prop__copy">
+          <h2 id="value-heading">Our Value Proposition</h2>
+          <p class="band-lede">
+            One Supplier. One Quotation. Multiple Categories.
+          </p>
+          <p class="section-intro">
+            Instead of managing multiple suppliers for a single project, send
+            Era-Sure your complete requirements. We source across our supplier
+            network and consolidate your electrical and renewable-energy
+            requirements into one clear quotation.
+          </p>
+          <ul class="benefit-list">
+            <li>
+              <strong>Consolidated procurement</strong> — Multiple product categories
+              through one supplier
+            </li>
+            <li>
+              <strong>Competitive sourcing</strong> — We utilise our extensive supply
+              chain to find the right combination of price, availability and specification
+            </li>
+            <li>
+              <strong>Technical support</strong> — Assistance with product selection
+              and specifications
+            </li>
+            <li>
+              <strong>Nationwide delivery</strong> — Coordinated delivery across South
+              Africa
+            </li>
+          </ul>
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <Section surface="muted" headingId="boq-heading">
+    <Container>
+      <div class="boq">
+        <h2 id="boq-heading">Send us your BOQ</h2>
+        <p class="band-lede">Have a project to price? Send us the BOQ.</p>
+        <p class="section-intro">
+          Whether you have a complete bill of quantities, a product list or
+          simply a list of part numbers, send it to us. We’ll source the
+          required equipment, check specifications and return a consolidated
+          quotation.
+        </p>
+        <div class="boq__actions">
+          <Button href={boqFormAnchor}>Submit a BOQ</Button>
+          <a class="boq__process" href="/about/#how-it-works-heading"
+            >How quotations work <span aria-hidden="true">→</span></a
+          >
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  {
+    featuredDeliveries.length > 0 && (
+      <Section surface="muted" headingId="deliveries-heading">
+        <Container>
+          <div class="delivery-section-heading">
+            <Eyebrow>Recent deliveries</Eyebrow>
+            <h2 id="deliveries-heading">Supply and delivery highlights</h2>
+            <p class="section-intro">
+              Selected electrical and renewable-energy equipment orders
+              delivered to projects across South Africa.
+            </p>
+          </div>
+          <ul class="delivery-grid">
+            {featuredDeliveries.map((entry) => (
+              <li>
+                <DeliveryHighlightCard entry={entry} headingLevel={3} />
+              </li>
+            ))}
+          </ul>
+          <p class="delivery-more">
+            <Button href="/deliveries/" variant="secondary">
+              View all delivery highlights
+            </Button>
+          </p>
+        </Container>
+      </Section>
+    )
+  }
+
+  <Section surface="inverted" size="compact" headingId="closing-heading">
+    <Container width="narrow">
+      <div class="closing-contact">
+        <Eyebrow>Request a quote</Eyebrow>
+        <h2 id="closing-heading">Submit your product requirements</h2>
+        <p>
+          Enter the required products in the quote form or attach a bill of
+          quantities.
+        </p>
+        <div class="closing-contact__actions">
+          {
+            primaryCta && (
+              <Button href={primaryCta.href}>{primaryCta.label}</Button>
+            )
+          }
+          {
+            isConfirmed(siteConfig.salesEmail) && (
+              <a
+                class="closing-contact__email"
+                href={`mailto:${siteConfig.salesEmail}`}
+              >
+                {siteConfig.salesEmail}
+              </a>
+            )
+          }
+        </div>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .hero {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .hero-shell {
+    position: relative;
+    display: grid;
+    align-items: center;
+    gap: var(--space-7);
+  }
+
+  .hero h1 {
+    max-width: 15ch;
+    font-size: clamp(2.5rem, 4.7vw, 4.25rem);
+    line-height: 1.04;
+    letter-spacing: -0.045em;
+  }
+
+  .hero h1 span {
+    color: var(--color-brand-green);
+  }
+
+  .hero__regional {
+    font-size: var(--font-size-sm);
+    margin-block-start: var(--space-2);
+  }
+  .hero__regional a {
+    color: var(--color-text-inverted);
+    text-underline-offset: 0.25em;
+  }
+
+  .hero-brand {
+    width: min(100%, 25rem);
+    justify-self: center;
+  }
+
+  .hero__intro {
+    max-width: var(--measure);
+    font-size: var(--font-size-lg);
+  }
+
+  .hero__actions,
+  .closing-contact__actions,
+  .boq__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    margin-block-start: var(--space-2);
+  }
+
+  .proof-strip {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-6) 0 0;
+    padding: var(--space-5) 0 0;
+    border-block-start: 1px solid var(--color-border);
+    list-style: none;
+  }
+
+  .proof-strip li {
+    display: grid;
+    gap: var(--space-1);
+    padding-inline-start: var(--space-3);
+    border-inline-start: 0.2rem solid var(--color-brand-green);
+  }
+
+  .proof-strip strong {
+    color: var(--color-link-inverted);
+    font-size: var(--font-size-lg);
+  }
+
+  .proof-strip span {
+    color: var(--color-text-inverted);
+    font-size: var(--font-size-sm);
+  }
+
+  .section-heading {
+    max-width: var(--measure);
+  }
+
+  .delivery-section-heading {
+    max-width: var(--measure);
+  }
+
+  .section-intro {
+    max-width: var(--measure);
+    margin-block-start: var(--space-3);
+  }
+
+  /* Both of these blocks are grids, so the gap already spaces the intro; the
+     shared margin would double it. Same reasoning the contact rail used. */
+  .value-prop__copy .section-intro,
+  .boq .section-intro {
+    margin-block-start: 0;
+  }
+
+  .value-prop {
+    display: grid;
+    align-items: start;
+    gap: var(--space-7);
+  }
+
+  .value-prop__copy,
+  .boq {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .boq {
+    max-width: 54rem;
+  }
+
+  .boq__process {
+    display: inline-flex;
+    align-items: center;
+    min-height: 3rem;
+    font-weight: 600;
+    text-underline-offset: 0.25em;
+  }
+
+  /* The sub-heading the client asked for beneath each of these two titles. It
+     is a paragraph rather than a heading: nothing is nested under it, and a
+     second heading here would add a level to the outline carrying no section. */
+  .band-lede {
+    max-width: var(--measure);
+    color: var(--color-accent);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    line-height: var(--line-height-tight);
+    text-wrap: balance;
+  }
+
+  .benefit-list {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* `--color-brand-green-deep`, not `--color-brand-green`: the light green is
+     1.7:1 on this white band and would read as no rule at all. The deep green
+     clears the 3:1 UI floor, which is the floor a rule is held to (ARCHI §11). */
+  .benefit-list li {
+    max-width: var(--measure);
+    padding-inline-start: var(--space-4);
+    border-inline-start: 0.2rem solid var(--color-brand-green-deep);
+    overflow-wrap: anywhere;
+  }
+
+  .closing-contact {
+    max-width: var(--measure);
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .catalogue-empty {
+    margin-block-start: var(--space-6);
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .category-grid li {
+    min-width: 0;
+  }
+
+  .delivery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    gap: var(--space-6);
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .delivery-grid li {
+    min-width: 0;
+  }
+
+  .delivery-more {
+    margin-block-start: var(--space-6);
+  }
+
+  .closing-contact__email {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--color-text-inverted);
+    overflow-wrap: anywhere;
+  }
+
+  .closing-contact__actions {
+    justify-content: center;
+  }
+
+  @media (min-width: 48rem) {
+    .hero-shell {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.85fr);
+    }
+
+    .proof-strip {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .category-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 47.999rem) {
+    .hero-shell {
+      gap: var(--space-6);
+    }
+    .hero-brand {
+      width: min(70vw, 16rem);
+    }
+    .proof-strip {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-2);
+      margin-block-start: var(--space-6);
+    }
+    .proof-strip strong {
+      font-size: var(--font-size-md);
+    }
+    .proof-strip li {
+      padding-inline-start: var(--space-2);
+    }
+    .hero__actions {
+      align-items: stretch;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    /* Keep the former video column blank until replacement media is chosen. */
+    .value-prop {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 17rem);
+      column-gap: var(--space-7);
+    }
+
+    .category-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

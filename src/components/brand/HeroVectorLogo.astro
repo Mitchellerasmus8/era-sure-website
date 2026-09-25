@@ -1,0 +1,180 @@
+---
+import heroWordmark from '@/assets/brand/wordmark-hero.svg';
+---
+
+<div
+  class="hero-vector-logo"
+  role="img"
+  aria-label="Era-Sure Renewables — The future of energy"
+>
+  <svg viewBox="0 0 1563 1563" aria-hidden="true">
+    <defs>
+      <linearGradient
+        id="hero-ring-gradient"
+        x1="781"
+        y1="298"
+        x2="781"
+        y2="1264"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stop-color="#0096B1"></stop>
+        <stop offset="1" stop-color="#7DD956"></stop>
+      </linearGradient>
+      <!-- Half-plane clips in view-box space: each bolt keeps only the half that
+           runs away from the wordmark, so the cut edge stays hidden behind it
+           however far the bolts are extended. -->
+      <clipPath id="hero-top-bolt-clip">
+        <rect x="-800" y="-800" width="3163" height="1506.5"></rect>
+      </clipPath>
+      <clipPath id="hero-bottom-bolt-clip">
+        <rect x="-800" y="852.5" width="3163" height="1510"></rect>
+      </clipPath>
+      <!-- Slogan baselines are arcs concentric with the two rings (centre
+           781.25, radii 328.83 / 482.91), offset by half a cap height so the
+           caps sit centred in the band: 405.87 - 33 above, 405.87 + 31 below. -->
+      <path
+        id="hero-top-slogan-arc"
+        d="M 413.95 716.45 A 373 373 0 0 1 1148.55 716.45"></path>
+      <path
+        id="hero-bottom-slogan-arc"
+        d="M 350.85 857.15 A 437 437 0 0 0 1211.65 857.15"></path>
+    </defs>
+
+    <!-- Each bolt is stretched 1.4x along its own axis (unit vector
+         ±(0.4838, -0.87515)), anchored where that axis crosses the clip edge.
+         A directional stretch lengthens the tips without thickening the bolt,
+         and the anchor keeps the cut cross-section identical to the original
+         mark, so the clipped end stays hidden behind the wordmark. -->
+    <g class="hero-vector-logo__bolt hero-vector-logo__bolt--top">
+      <g clip-path="url(#hero-top-bolt-clip)">
+        <g
+          transform="matrix(1.0936248 -.169362 -.169362 1.3063552 42.152 -76.242)"
+        >
+          <path
+            transform="translate(481 113) matrix(-2.4334538 0 0 -2.4334538 674.12891 1217.56604)"
+            d="M276.257 0 100.234 191.281 182.79 166.497 63.508 313.104 127.317 294.828 0 499.709 205.299 249.324 124.979 270.956 249.846 120.455 172.706 144.165 276.257 0Z"
+          ></path>
+        </g>
+      </g>
+    </g>
+
+    <g class="hero-vector-logo__bolt hero-vector-logo__bolt--bottom">
+      <g clip-path="url(#hero-bottom-bolt-clip)">
+        <g
+          transform="matrix(1.0936248 -.169362 -.169362 1.3063552 76.334 -138.075)"
+        >
+          <path
+            transform="translate(400 226) matrix(2.4334538 0 0 2.4334538 .570343 .496582)"
+            d="M276.257 0 100.234 191.281 182.79 166.497 63.508 313.104 127.317 294.828 0 499.709 205.299 249.324 124.979 270.956 249.846 120.455 172.706 144.165 276.257 0Z"
+          ></path>
+        </g>
+      </g>
+    </g>
+
+    <g
+      transform="translate(781.25 781.25) scale(1.2) translate(-781.25 -781.25)"
+    >
+      <circle class="hero-vector-logo__ring" cx="781.25" cy="781.25" r="482.91"
+      ></circle>
+      <circle class="hero-vector-logo__ring" cx="781.24" cy="781.24" r="328.83"
+      ></circle>
+
+      <text class="hero-vector-logo__slogan hero-vector-logo__slogan--top">
+        <textPath href="#hero-top-slogan-arc" startOffset="50%">
+          THE FUTURE
+        </textPath>
+      </text>
+      <text class="hero-vector-logo__slogan hero-vector-logo__slogan--bottom">
+        <textPath href="#hero-bottom-slogan-arc" startOffset="50%">
+          OF ENERGY
+        </textPath>
+      </text>
+
+      <g class="hero-vector-logo__rules">
+        <path d="M247 639H585"></path>
+        <path d="M970 639H1308"></path>
+        <path d="M269 929H554"></path>
+        <path d="M1005 929H1290"></path>
+      </g>
+
+      <image href={heroWordmark.src} x="365" y="681" width="833" height="220" />
+    </g>
+  </svg>
+</div>
+
+<style>
+  .hero-vector-logo {
+    position: relative;
+    width: min(100%, 28.5rem);
+    aspect-ratio: 1;
+    isolation: isolate;
+  }
+
+  .hero-vector-logo::before {
+    position: absolute;
+    z-index: -1;
+    inset: 12%;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgb(0 150 177 / 12%),
+      rgb(125 217 86 / 5%) 48%,
+      transparent 72%
+    );
+    content: '';
+    filter: blur(0.6rem);
+  }
+
+  .hero-vector-logo svg {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 1.2rem 2rem rgb(0 0 0 / 24%));
+  }
+
+  .hero-vector-logo__ring {
+    fill: none;
+    stroke: url('#hero-ring-gradient');
+    stroke-width: 11;
+  }
+
+  .hero-vector-logo__bolt {
+    filter: drop-shadow(0 0 0.25rem currentColor);
+  }
+
+  .hero-vector-logo__bolt path {
+    fill: currentColor;
+  }
+
+  .hero-vector-logo__bolt--top {
+    color: var(--color-brand-teal);
+  }
+
+  .hero-vector-logo__bolt--bottom {
+    color: var(--color-brand-green);
+  }
+
+  .hero-vector-logo__slogan {
+    fill: var(--color-text-inverted);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 96px;
+    font-weight: 700;
+    letter-spacing: 18px;
+    text-anchor: middle;
+  }
+
+  .hero-vector-logo__slogan--bottom {
+    font-size: 91px;
+    letter-spacing: 15px;
+  }
+
+  .hero-vector-logo__rules {
+    fill: none;
+    stroke: var(--color-text-inverted);
+    stroke-linecap: square;
+    stroke-width: 10;
+  }
+</style>

@@ -1,0 +1,28 @@
+---
+/**
+ * The small uppercase label that sits above a section heading.
+ *
+ * It is a primitive because it has four callers, not in anticipation of one —
+ * the rule ARCHI §11 sets for this directory. Four identical copies of the same
+ * scoped rule was the alternative, and the first divergence in letter-spacing
+ * would have been invisible until two bands sat side by side.
+ *
+ * It is deliberately not a heading. An eyebrow is a label for the heading
+ * beneath it; marking it up as one would put a second, competing heading into
+ * the document outline at every band.
+ */
+---
+
+<p class="eyebrow"><slot /></p>
+
+<style>
+  /* `color: inherit` is load-bearing: the eyebrow renders on all three Section
+     surfaces, and a fixed colour would fail contrast on the inverted one. */
+  .eyebrow {
+    color: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+</style>

@@ -1,0 +1,123 @@
+---
+import Breadcrumbs from '@/components/layout/Breadcrumbs.astro';
+import FloatingWhatsApp from '@/components/enquiry/FloatingWhatsApp.astro';
+import Footer from '@/components/layout/Footer.astro';
+import Header from '@/components/layout/Header.astro';
+import SkipLink from '@/components/layout/SkipLink.astro';
+import StructuredDataComponent from '@/components/seo/StructuredData.astro';
+import type { Crumb } from '@/lib/navigation/breadcrumbs';
+import { buildNavItems } from '@/lib/navigation/nav';
+import { getPrimaryCta } from '@/lib/navigation/cta';
+import { buildSalesContactLinks } from '@/lib/config/sales-contacts';
+import {
+  buildBreadcrumbStructuredData,
+  type StructuredData,
+} from '@/lib/seo/structured-data';
+import { resolveRobots } from '@/lib/seo/robots';
+import { siteConfig } from '@/site.config';
+import '@/styles/global.css';
+import primaryFont from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2?url';
+
+interface Props {
+  title: string;
+  description: string;
+  breadcrumbs?: Crumb[];
+  robots?: string;
+  socialImage?: string;
+  socialImageAlt?: string;
+  structuredData?: StructuredData | StructuredData[];
+}
+
+const {
+  title,
+  description,
+  breadcrumbs,
+  robots,
+  socialImage = '/og.png',
+  socialImageAlt = 'Era-Sure Renewables — electrical and renewable-energy supply across South Africa',
+  structuredData,
+} = Astro.props;
+const pathname = Astro.url.pathname;
+// Netlify sets CONTEXT at build time; every non-production context is forced
+// out of the index here, because netlify.toml headers cannot be scoped to one.
+const robotsContent = resolveRobots(robots, process.env.CONTEXT);
+const canonicalUrl = new URL(pathname, siteConfig.siteUrl).href;
+const socialImageUrl = new URL(socialImage, siteConfig.siteUrl).href;
+const documentTitle = title.includes(siteConfig.displayName)
+  ? title
+  : `${title} | ${siteConfig.displayName}`;
+const navItems = buildNavItems();
+const primaryCta = getPrimaryCta();
+const mitchell = buildSalesContactLinks(siteConfig).find(
+  (contact) => contact.id === 'mitchell',
+);
+const structuredDataItems = structuredData
+  ? Array.isArray(structuredData)
+    ? structuredData
+    : [structuredData]
+  : [];
+const breadcrumbStructuredData = breadcrumbs
+  ? buildBreadcrumbStructuredData(breadcrumbs, siteConfig.siteUrl)
+  : null;
+---
+
+<!doctype html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="preload"
+      href={primaryFont}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+    <title>{documentTitle}</title>
+    <meta name="description" content={description} />
+    {robotsContent && <meta name="robots" content={robotsContent} />}
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {
+      /*
+      The .ico is what every consumer that ignores this markup fetches from the
+      root regardless — Google's favicon crawler, older browsers, link-unfurl bots.
+      It carries a `sizes` hint so browsers that can read SVG still prefer the
+      line below it. All of it is generated from the one mark by
+      `scripts/generate-favicons.mjs`; none of it is a build step.
+    */
+    }
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_ZA" />
+    <meta property="og:site_name" content={siteConfig.displayName} />
+    <meta property="og:title" content={documentTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:alt" content={socialImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={documentTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    {structuredDataItems.map((data) => <StructuredDataComponent data={data} />)}
+    {
+      breadcrumbStructuredData && (
+        <StructuredDataComponent data={breadcrumbStructuredData} />
+      )
+    }
+  </head>
+  <body>
+    <SkipLink />
+    <Header pathname={pathname} navItems={navItems} primaryCta={primaryCta} />
+    <main id="main" tabindex="-1">
+      {breadcrumbs && <Breadcrumbs crumbs={breadcrumbs} />}
+      <slot />
+    </main>
+    <Footer navItems={navItems} />
+    {mitchell && <FloatingWhatsApp contact={mitchell} />}
+  </body>
+</html>

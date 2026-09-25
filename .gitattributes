@@ -1,0 +1,36 @@
+# Normalize all text files to LF in the repository.
+# Working-tree line endings are LF too, so core.autocrlf cannot introduce
+# phantom whole-file diffs on Windows.
+* text=auto eol=lf
+
+# Shell scripts must keep LF even if a tool tries otherwise.
+*.sh text eol=lf
+
+# Windows-only scripts need CRLF to run.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets: never convert, never diff as text.
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.mp4 binary
+*.webm binary
+
+# Lockfiles: text, but skip them in diffs and language stats.
+package-lock.json -diff linguist-generated
+pnpm-lock.yaml -diff linguist-generated
+yarn.lock -diff linguist-generated

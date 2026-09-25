@@ -1,0 +1,82 @@
+---
+interface Props {
+  name: string;
+  href: string;
+  crossSection: string;
+  coreCount: string;
+  conductorMaterial: string;
+  summary: string;
+}
+
+const { name, href, crossSection, coreCount, conductorMaterial, summary } =
+  Astro.props;
+---
+
+<article class="product-card">
+  <h2 class="product-card__title"><a href={href}>{name}</a></h2>
+  <p class="product-card__summary">{summary}</p>
+  <dl class="product-card__specs">
+    <div>
+      <dt>Cross-section</dt>
+      <dd>{crossSection}</dd>
+    </div>
+    <div>
+      <dt>Core count</dt>
+      <dd>{coreCount}</dd>
+    </div>
+    <div>
+      <dt>Conductor material</dt>
+      <dd>{conductorMaterial}</dd>
+    </div>
+  </dl>
+</article>
+
+<style>
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+  }
+
+  .product-card:hover {
+    border-color: var(--color-accent);
+  }
+
+  .product-card__title {
+    font-size: var(--font-size-xl);
+    overflow-wrap: anywhere;
+  }
+
+  .product-card__summary {
+    margin-block-start: var(--space-3);
+    overflow-wrap: anywhere;
+  }
+
+  .product-card__specs {
+    display: grid;
+    gap: var(--space-3);
+    margin-block-start: var(--space-5);
+    padding-block-start: var(--space-4);
+    border-block-start: 1px solid var(--color-border);
+  }
+
+  .product-card__specs div {
+    min-width: 0;
+  }
+
+  .product-card__specs dt {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .product-card__specs dd {
+    margin: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+</style>

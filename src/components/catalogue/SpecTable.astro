@@ -1,0 +1,92 @@
+---
+import type { SpecRow } from '@/lib/catalogue/specs';
+
+interface Props {
+  rows: SpecRow[];
+}
+
+const { rows } = Astro.props;
+---
+
+{
+  rows.length > 0 && (
+    <div
+      class="spec-table"
+      role="region"
+      aria-label="Product specifications"
+      tabindex="0"
+    >
+      <table>
+        <caption>Product specifications</caption>
+        <thead>
+          <tr>
+            <th scope="col">Specification</th>
+            <th scope="col">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr>
+              <th scope="row">{row.label}</th>
+              <td>{row.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+<style>
+  .spec-table {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .spec-table table {
+    min-width: 36rem;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .spec-table caption {
+    padding: var(--space-3);
+    border-block-end: 1px solid var(--color-border);
+    text-align: start;
+    font-weight: 700;
+  }
+
+  .spec-table th,
+  .spec-table td {
+    padding: var(--space-2) var(--space-3);
+    border-block-end: 1px solid var(--color-border);
+    text-align: start;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  .spec-table thead th {
+    background: var(--color-surface);
+    font-weight: 700;
+  }
+
+  .spec-table tbody tr:nth-child(even) {
+    background: var(--color-surface);
+  }
+
+  .spec-table tbody th {
+    width: 40%;
+    font-weight: 600;
+  }
+
+  .spec-table:focus-visible {
+    outline: 0.2rem solid var(--color-focus);
+    outline-offset: 0.2rem;
+  }
+</style>

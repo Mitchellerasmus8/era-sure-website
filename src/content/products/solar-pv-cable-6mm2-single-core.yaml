@@ -1,0 +1,26 @@
+# All specification values below are invented and illustrative. They must be replaced with client-supplied or manufacturer-datasheet data before status becomes published.
+slug: 'solar-pv-cable-6mm2-single-core'
+name: 'Solar PV Cable 6 mm² Single Core'
+category: 'cables'
+status: 'draft'
+summary: 'Higher-capacity single-core solar PV cable for longer runs and larger array sections.'
+conductorMaterial: 'copper'
+crossSectionMm2: 6
+coreCount: 1
+voltageRating: '1.5/1.5 kV DC'
+currentRatingAmps: 70
+temperatureMinC: -40
+temperatureMaxC: 90
+insulationMaterial: 'XLPE'
+sheathMaterial: 'XLPE'
+uvResistant: true
+colours:
+  - 'black'
+  - 'red'
+lengthsM:
+  - 100
+  - 500
+standards:
+  - 'EN 50618'
+stockNote: 'Illustrative stock note; replace with confirmed availability.'
+minimumOrderQuantity: '1 drum'

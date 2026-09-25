@@ -1,0 +1,348 @@
+---
+import SalesContactCard from '@/components/enquiry/SalesContactCard.astro';
+import Button from '@/components/ui/Button.astro';
+import Card from '@/components/ui/Card.astro';
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { buildContactDetails } from '@/lib/config/contact';
+import { buildSalesContactLinks } from '@/lib/config/sales-contacts';
+import { getBreadcrumbs } from '@/lib/navigation/breadcrumbs';
+import { getPrimaryCta } from '@/lib/navigation/cta';
+import { siteConfig } from '@/site.config';
+
+const salesContacts = buildSalesContactLinks(siteConfig);
+const contactDetails = buildContactDetails(siteConfig);
+const primaryCta = getPrimaryCta();
+const breadcrumbs = getBreadcrumbs('/about/');
+---
+
+<BaseLayout
+  title={`About ${siteConfig.displayName}`}
+  description="Meet the brothers behind Era-Sure Renewables, your electrical and solar supply team in Gauteng and KwaZulu-Natal, delivering across South Africa."
+  breadcrumbs={breadcrumbs}
+>
+  {
+    /* The default container, not `narrow`: every other band on this page uses
+      it, and the masthead is the one band whose left edge has to line up with
+      the header and the breadcrumbs. `narrow` was survivable while this band
+      was muted and the indent invisible; against the inverted fill the rail
+      jump is the first thing you see. Prose is still capped at `--measure` by
+      `.about-intro`, which is what `narrow` was really being used for. */
+  }
+  <Section surface="inverted" headingId="about-heading">
+    <Container>
+      <div class="about-intro">
+        <Eyebrow>About Era-Sure</Eyebrow>
+        <h1 id="about-heading">Two brothers. One supply partner.</h1>
+        <p class="about-intro__lede">
+          Mitchell and Wesley Erasmus began Era-Sure out of a home garage,
+          supplying local installers with certain small electrical components.
+          Today, Era-Sure operates out of offices in KZN and Gauteng with a
+          fleet of delivery vehicles and a dedicated logistics team - delivering
+          a vast majority of electrical products across the country.
+        </p>
+        <p>
+          Era-Sure works closely with PV installers, EPCs, electrical
+          contractors, electricians and project managers to provide each
+          installation with the right products, reliable supply and responsive
+          support from project planning through to completion.
+        </p>
+      </div>
+    </Container>
+  </Section>
+
+  <Section surface="default" headingId="how-it-works-heading">
+    <Container>
+      <div class="about-section">
+        <Eyebrow>Quotation process</Eyebrow>
+        <h2 id="how-it-works-heading">From enquiry to quotation</h2>
+      </div>
+      <ol class="steps-list">
+        <li>
+          <h3>Submit your requirements</h3>
+          <p>Provide part numbers, a product list or a bill of quantities.</p>
+        </li>
+        <li>
+          <h3>Confirm specifications</h3>
+          <p>
+            We confirm the technical and commercial details required for
+            accurate pricing.
+          </p>
+        </li>
+        <li>
+          <h3>Receive your quotation</h3>
+          <p>
+            The quotation sets out current pricing, availability and delivery
+            arrangements.
+          </p>
+        </li>
+      </ol>
+      {
+        contactDetails.responseNote && (
+          <p class="response-note">{contactDetails.responseNote}</p>
+        )
+      }
+    </Container>
+  </Section>
+
+  <Section surface="muted" headingId="value-heading">
+    <Container>
+      <div class="about-section about-section--full">
+        <Eyebrow>Procurement support</Eyebrow>
+        <h2 id="value-heading">
+          One point of contact across multiple product categories
+        </h2>
+        <p>
+          Projects often require cables, cable management, switchgear,
+          enclosures, electrical consumables and renewable-energy equipment from
+          several manufacturers.
+        </p>
+        <p>
+          Era-Sure coordinates these requirements through its supplier network
+          and prepares quotations based on project specifications, budget,
+          current pricing and availability.
+        </p>
+        <p>
+          <a href="/products/">Explore our equipment categories</a> to see what products
+          we can supply.
+        </p>
+        {
+          /* Every claim below is the client's own, from the completed
+            questionnaire: delivery and support from the §9 proof points, and
+            warranties from §5 — "Clients enquire with Era-Sure, who take it up
+            with the supplier". Nothing here may be extended without a recorded
+            client answer, and the delivery window is on the pre-launch
+            checklist for confirmation before launch. */
+        }
+        <ul class="about-list" role="list">
+          <Card as="li">
+            <h3>Nationwide delivery</h3>
+            <p>
+              Arranged directly or through logistics partners depending on the
+              destination.
+            </p>
+          </Card>
+          <Card as="li">
+            <h3>After-sales help available 24/7</h3>
+            <p>
+              Separate from the weekday hours used for new enquiries and
+              quoting.
+            </p>
+          </Card>
+          <Card as="li">
+            <h3>One route for warranty queries</h3>
+            <p>
+              Raise the issue with Era-Sure and we’ll take it up with the
+              manufacturer or supplier.
+            </p>
+          </Card>
+        </ul>
+      </div>
+    </Container>
+  </Section>
+
+  <Section surface="default" headingId="coverage-heading">
+    <Container>
+      <div class="about-section about-contacts">
+        <Eyebrow>Regional contacts</Eyebrow>
+        <h2 id="coverage-heading">Contact Era-Sure in your region</h2>
+        <p>
+          Era-Sure operates from bases in Gauteng and KwaZulu-Natal, with
+          logistics partners supporting deliveries throughout South Africa.
+        </p>
+        {
+          salesContacts.length > 0 ? (
+            <ul class="sales-contact-grid">
+              {salesContacts.map((contact) => (
+                <li>
+                  <SalesContactCard {...contact} headingLevel={3} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="contact-empty">Contact details are being confirmed.</p>
+          )
+        }
+      </div>
+    </Container>
+  </Section>
+
+  {
+    primaryCta && (
+      <Section surface="inverted" headingId="about-cta-heading">
+        <Container width="narrow">
+          <div class="about-cta">
+            <Eyebrow>Quotations</Eyebrow>
+            <h2 id="about-cta-heading">Request pricing and availability</h2>
+            <p>
+              Submit a product list or bill of quantities. Era-Sure will confirm
+              any additional information required for the quotation.
+            </p>
+            <div class="about-cta__actions">
+              <Button href={primaryCta.href}>{primaryCta.label}</Button>
+            </div>
+          </div>
+        </Container>
+      </Section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .about-intro,
+  .about-section,
+  .about-cta {
+    display: grid;
+    gap: var(--space-4);
+    max-width: var(--measure);
+  }
+
+  .about-intro h1,
+  .about-section h2,
+  .about-cta h2 {
+    overflow-wrap: anywhere;
+  }
+
+  /* The masthead moved from the muted band to the inverted one so that /about/
+     opens the way / and /contact/ do. Nothing else on the page changed: the
+     band below it was already `default`, so the alternation still holds. */
+  .about-intro__lede {
+    font-size: var(--font-size-lg);
+  }
+
+  /* The proof points and the registered details are `Card` now, so only the
+     grid layout belongs here. Both bands opt out of `--measure`: it is a
+     reading width for prose, and a card grid clamped to it strands the rest of
+     the band as empty space. */
+  .about-section--full {
+    max-width: none;
+  }
+
+  /* The band is full width for the grid's sake; its prose is still prose, so
+     the reading measure is restored on the text children individually. */
+  .about-section--full > h2,
+  .about-section--full > p {
+    max-width: var(--measure);
+  }
+
+  /* The numbered quotation steps, moved here from the home page with the band.
+     They keep the `--color-surface` fill they had there, which is why the band
+     stayed `default`: on the `muted` band that fill and the band are the same
+     colour and the cards vanish. */
+  .steps-list {
+    display: grid;
+    gap: var(--space-4);
+    margin-block-start: var(--space-6);
+    padding: 0;
+    counter-reset: step;
+    list-style: none;
+  }
+
+  .steps-list li {
+    max-width: var(--measure);
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    counter-increment: step;
+    overflow-wrap: anywhere;
+  }
+
+  .steps-list li::before {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-block-end: var(--space-4);
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-tint);
+    color: var(--color-accent);
+    content: counter(step, decimal-leading-zero);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    place-items: center;
+  }
+
+  .steps-list h3 {
+    margin-block-end: var(--space-2);
+  }
+
+  .response-note {
+    max-width: var(--measure);
+    margin-block-start: var(--space-6);
+  }
+
+  .about-list {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .about-list h3 {
+    font-size: var(--font-size-lg);
+    overflow-wrap: anywhere;
+  }
+
+  .about-list p {
+    overflow-wrap: anywhere;
+  }
+
+  .sales-contact-grid {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sales-contact-grid li {
+    min-width: 0;
+  }
+
+  .contact-empty {
+    margin-block-start: var(--space-2);
+  }
+
+  .registration-list {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .registration-list dt {
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+
+  .registration-list dd {
+    margin-inline-start: 0;
+    font-size: var(--font-size-lg);
+    overflow-wrap: anywhere;
+  }
+
+  .about-cta__actions {
+    margin-block-start: var(--space-2);
+  }
+
+  @media (min-width: 48rem) {
+    .sales-contact-grid,
+    .about-list,
+    .registration-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .steps-list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .about-list,
+    .registration-list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

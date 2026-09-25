@@ -1,0 +1,417 @@
+---
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { buildPrivacyNotice } from '@/lib/config/privacy';
+import { getBreadcrumbs } from '@/lib/navigation/breadcrumbs';
+import { siteConfig } from '@/site.config';
+
+const notice = buildPrivacyNotice(siteConfig);
+const breadcrumbs = getBreadcrumbs('/privacy/');
+
+/**
+ * Deliberately a fixed date, not `new Date()`. This states when the notice's
+ * wording last changed, which is a fact about the document — a build-time date
+ * would claim the notice was revised on every deploy, which is both false and
+ * the opposite of reassuring on a legal page.
+ *
+ * **Bump this whenever the wording changes**, including when a gated section
+ * starts rendering because a client fact arrived.
+ */
+const lastUpdated = { iso: '2026-08-10', display: '10 August 2026' };
+const { mandatoryLabels, optionalLabels } = notice.submissionRequirement;
+const responsibleParty = notice.responsibleParty;
+---
+
+<BaseLayout
+  title={`Privacy notice | ${siteConfig.displayName}`}
+  description="Privacy notice for Era-Sure Renewables under POPIA: how quotation data is collected, processed and protected for electrical and solar equipment enquiries."
+  breadcrumbs={breadcrumbs}
+>
+  <Section surface="muted" headingId="privacy-heading">
+    <Container width="narrow">
+      <div class="privacy-intro">
+        <Eyebrow>Privacy and POPIA</Eyebrow>
+        <h1 id="privacy-heading">Privacy notice</h1>
+        <p>
+          This notice explains how Era-Sure handles personal information sent
+          through a quotation enquiry.
+        </p>
+      </div>
+    </Container>
+  </Section>
+
+  <Section surface="default">
+    <Container width="narrow">
+      <div class="privacy-content">
+        <section class="privacy-section" aria-labelledby="who-we-are-heading">
+          <h2 id="who-we-are-heading">Who we are</h2>
+          {
+            responsibleParty.name ? (
+              <p>
+                The responsible party is {responsibleParty.name}. We use the
+                information below to respond to quotation enquiries and prepare
+                quotations.
+              </p>
+            ) : (
+              <p>
+                Era-Sure uses the information below to respond to quotation
+                enquiries and prepare quotations.
+              </p>
+            )
+          }
+          <dl class="privacy-details">
+            {
+              responsibleParty.name && (
+                <div>
+                  <dt>Registered name</dt>
+                  <dd>{responsibleParty.name}</dd>
+                </div>
+              )
+            }
+            {
+              responsibleParty.registrationNumber && (
+                <div>
+                  <dt>Registration number</dt>
+                  <dd>{responsibleParty.registrationNumber}</dd>
+                </div>
+              )
+            }
+            {
+              responsibleParty.vatNumber && (
+                <div>
+                  <dt>VAT number</dt>
+                  <dd>{responsibleParty.vatNumber}</dd>
+                </div>
+              )
+            }
+            {
+              responsibleParty.address && (
+                <div>
+                  <dt>Registered address</dt>
+                  <dd>{responsibleParty.address}</dd>
+                </div>
+              )
+            }
+          </dl>
+        </section>
+
+        <section
+          class="privacy-section"
+          aria-labelledby="what-we-collect-heading"
+        >
+          <h2 id="what-we-collect-heading">What we collect and why</h2>
+          <p>
+            We collect the following information when you submit a quotation
+            enquiry.
+          </p>
+          <dl class="privacy-details">
+            {
+              notice.personalData.map((field) => (
+                <div>
+                  <dt>{field.label}</dt>
+                  <dd>
+                    <span>{field.purpose}</span>
+                    {field.accept && (
+                      <span class="privacy-detail-note">
+                        Accepted file types: {field.accept}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              ))
+            }
+          </dl>
+          <p>The following information is mandatory for a quotation enquiry:</p>
+          <ul class="privacy-list">
+            {mandatoryLabels.map((label) => <li>{label}</li>)}
+          </ul>
+          {
+            optionalLabels.length > 0 && (
+              <p>
+                The following information is optional:{' '}
+                {optionalLabels.join(', ')}.
+              </p>
+            )
+          }
+          <p>
+            If you do not provide the mandatory information, Era-Sure cannot
+            prepare a quotation.
+          </p>
+        </section>
+
+        <section
+          class="privacy-section"
+          aria-labelledby="automatic-data-heading"
+        >
+          <h2 id="automatic-data-heading">What is collected automatically</h2>
+          <dl class="privacy-details">
+            {
+              notice.automaticData.map((item) => (
+                <div>
+                  <dt>{item.label}</dt>
+                  <dd>
+                    {item.purpose} The operator is {item.operator}.
+                  </dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section class="privacy-section" aria-labelledby="lawful-use-heading">
+          <h2 id="lawful-use-heading">Why we may lawfully process it</h2>
+          <p>
+            We process the information you provide to respond to your enquiry
+            and take steps towards preparing a quotation at your request. We
+            limit the information requested to what is needed for that purpose.
+          </p>
+        </section>
+
+        <section class="privacy-section" aria-labelledby="operators-heading">
+          <h2 id="operators-heading">Who else processes it</h2>
+          <p>
+            Service providers help us receive, store and deliver quotation
+            enquiries and notification emails.
+          </p>
+          <ul class="privacy-operator-list">
+            {
+              notice.operators.map((operator) => (
+                <li>
+                  <h3>{operator.name}</h3>
+                  <p>{operator.role}.</p>
+                  {operator.destination && (
+                    <p>
+                      <strong>Destination:</strong> {operator.destination}.
+                    </p>
+                  )}
+                  {operator.levelOfProtection && (
+                    <p>
+                      <strong>Level of protection:</strong>{' '}
+                      {operator.levelOfProtection}.
+                    </p>
+                  )}
+                  {operator.popiaSection72Basis && (
+                    <p>
+                      <strong>POPIA section 72 basis:</strong>{' '}
+                      {operator.popiaSection72Basis}.
+                    </p>
+                  )}
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        {
+          notice.retention && (
+            <section
+              class="privacy-section"
+              aria-labelledby="retention-heading"
+            >
+              <h2 id="retention-heading">How long we keep it</h2>
+              {/* No trailing punctuation added: both values are client-supplied
+                  sentences, and appending a full stop to one but not the other
+                  produced "24 months.." the moment a client wrote one properly. */}
+              <p>{notice.retention.period}</p>
+              <p>{notice.retention.routine}</p>
+            </section>
+          )
+        }
+
+        <section class="privacy-section" aria-labelledby="rights-heading">
+          <h2 id="rights-heading">Your rights under POPIA</h2>
+          <p>
+            Subject to the limits and requirements of POPIA, you may ask us to
+            confirm whether we hold personal information about you, request
+            access to it, and ask us to correct or delete information that is
+            inaccurate or no longer lawfully retained. You may also object to
+            processing where POPIA provides that right.
+          </p>
+          <p>
+            You may contact us using the details below to exercise a right or
+            ask a question about this notice. You may also complain to the
+            Information Regulator using the official contact details below.
+          </p>
+        </section>
+
+        <section class="privacy-section" aria-labelledby="cookies-heading">
+          <h2 id="cookies-heading">Cookies and analytics</h2>
+          <p>This site sets no cookies and runs no analytics.</p>
+        </section>
+
+        <section class="privacy-section" aria-labelledby="contact-heading">
+          <h2 id="contact-heading">How to contact us</h2>
+          {
+            notice.informationOfficer ? (
+              <dl class="privacy-details">
+                <div>
+                  <dt>Information Officer</dt>
+                  <dd>{notice.informationOfficer.name}</dd>
+                </div>
+                <div>
+                  <dt>Email</dt>
+                  <dd>
+                    <a href={`mailto:${notice.informationOfficer.email}`}>
+                      {notice.informationOfficer.email}
+                    </a>
+                  </dd>
+                </div>
+              </dl>
+            ) : (
+              <p>
+                The Information Officer can be contacted through the general
+                Era-Sure contact routes below.
+              </p>
+            )
+          }
+          <h3>Requests to Era-Sure</h3>
+          {
+            notice.dataSubjectContacts.length > 0 ? (
+              <ul class="privacy-list">
+                {notice.dataSubjectContacts.map((contact) => (
+                  <li>
+                    {contact.label}:{' '}
+                    {contact.href ? (
+                      <a href={contact.href}>{contact.value}</a>
+                    ) : (
+                      contact.value
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Contact details are being confirmed.</p>
+            )
+          }
+          <h3>{notice.regulator.name}</h3>
+          <p>
+            You may complain to the Information Regulator directly. Complaints
+            have their own address, which is not the general enquiries one.
+          </p>
+          <dl class="privacy-details">
+            <div>
+              <dt>Address</dt>
+              <dd>{notice.regulator.address}</dd>
+            </div>
+            <div>
+              <dt>POPIA complaints</dt>
+              <dd>
+                <a href={`mailto:${notice.regulator.complaintsEmail}`}>
+                  {notice.regulator.complaintsEmail}
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt>General enquiries</dt>
+              <dd>
+                <a href={`mailto:${notice.regulator.email}`}>
+                  {notice.regulator.email}
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt>Telephone</dt>
+              <dd>{notice.regulator.telephone}</dd>
+            </div>
+            <div>
+              <dt>Toll-free</dt>
+              <dd>{notice.regulator.tollFree}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="privacy-section" aria-labelledby="updated-heading">
+          <h2 id="updated-heading">When this notice was last updated</h2>
+          <p>
+            <time datetime={lastUpdated.iso}>{lastUpdated.display}</time>
+          </p>
+        </section>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .privacy-intro,
+  .privacy-content,
+  .privacy-section {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .privacy-intro,
+  .privacy-content {
+    max-width: var(--measure);
+  }
+
+  .privacy-intro h1,
+  .privacy-section h2,
+  .privacy-section h3 {
+    overflow-wrap: anywhere;
+  }
+
+  .privacy-content {
+    gap: var(--space-8);
+  }
+
+  .privacy-details {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .privacy-details > div {
+    min-width: 0;
+  }
+
+  .privacy-details dt {
+    font-weight: 600;
+  }
+
+  .privacy-details dd {
+    margin-inline-start: 0;
+    color: var(--color-text-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .privacy-details dd > span {
+    display: block;
+  }
+
+  .privacy-detail-note {
+    margin-block-start: var(--space-2);
+    font-size: var(--font-size-sm);
+  }
+
+  .privacy-list,
+  .privacy-operator-list {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding-inline-start: var(--space-5);
+  }
+
+  .privacy-list li,
+  .privacy-operator-list li {
+    overflow-wrap: anywhere;
+  }
+
+  .privacy-operator-list {
+    gap: var(--space-5);
+  }
+
+  .privacy-operator-list li {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .privacy-operator-list h3 {
+    font-size: var(--font-size-lg);
+  }
+
+  .privacy-operator-list p {
+    margin: 0;
+  }
+</style>

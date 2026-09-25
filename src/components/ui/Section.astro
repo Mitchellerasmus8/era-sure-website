@@ -1,0 +1,88 @@
+---
+interface Props {
+  surface?: 'default' | 'muted' | 'inverted';
+  headingId?: string;
+  /** Density is a second axis, independent of the section's surface. */
+  size?: 'default' | 'compact';
+}
+
+const { surface = 'default', headingId, size = 'default' } = Astro.props;
+---
+
+<section
+  class:list={[
+    'section',
+    `section--${surface}`,
+    size === 'compact' && 'section--compact',
+  ]}
+  aria-labelledby={headingId}
+>
+  <slot />
+</section>
+
+<style>
+  /* Padding is charged per section, so it DOUBLES at every band boundary: two
+     adjacent sections at `--space-9` put 192px between two blocks of content.
+     Measured across the site at 1280px, that put 38-39% of the text-light
+     pages (contact, about) into empty space. The scale below is one step down
+     at both breakpoints, which is the difference between a boundary that reads
+     as separation and one that reads as a gap. */
+  .section {
+    padding-block: var(--space-7);
+    background: var(--color-background);
+    color: var(--color-text);
+  }
+
+  /* Size is the section's second axis: it changes vertical density without
+     creating a fourth surface or duplicating the surface rules. */
+  .section--compact {
+    padding-block: var(--space-6);
+  }
+
+  .section--muted {
+    background: var(--color-surface);
+  }
+
+  .section--inverted {
+    background: var(--color-surface-inverted);
+    background:
+      radial-gradient(
+        circle at 88% 18%,
+        color-mix(in srgb, var(--color-brand-teal) 18%, transparent),
+        transparent 31%
+      ),
+      radial-gradient(
+        circle at 72% 110%,
+        color-mix(in srgb, var(--color-brand-green) 10%, transparent),
+        transparent 30%
+      ),
+      var(--color-surface-inverted);
+    color: var(--color-text-inverted);
+    /* Re-point the semantic link token for this subtree. The default
+       --color-link is designed for light surfaces and fails AA here — axe would
+       only catch that if a link happened to land in an inverted band. The
+       section knows it is inverted, so it fixes it. The lime reads 9.03:1 on
+       this surface, and is the one place that colour is legible as text. */
+    --color-link: var(--color-link-inverted);
+    /* Hover resolves to the inverted body colour (14.00:1) rather than a new
+       token — --color-accent-hover is a dark teal and would be illegible here. */
+    --color-link-hover: var(--color-text-inverted);
+    /* Same reasoning for the filled CTA, and a harder failure: the teal fill is
+       only 2.51:1 against this surface, so the button's *shape* disappears even
+       though its label is legible. Re-pointed here rather than fixed in
+       `Button`, because the section is what knows which surface it is. */
+    --color-cta: var(--color-cta-inverted);
+    --color-cta-hover: var(--color-cta-inverted-hover);
+    --color-cta-contrast: var(--color-cta-contrast-inverted);
+  }
+
+  @media (min-width: 48rem) {
+    .section {
+      padding-block: var(--space-8);
+    }
+
+    .section--compact {
+      padding-block: var(--space-7);
+    }
+  }
+</style>

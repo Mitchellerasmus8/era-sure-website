@@ -1,0 +1,314 @@
+---
+import { siteConfig } from '@/site.config';
+---
+
+<form
+  class="quote-form"
+  name="quote-request"
+  method="POST"
+  action="/quote/success/"
+  data-netlify="true"
+  netlify-honeypot="website"
+  enctype="multipart/form-data"
+>
+  <input type="hidden" name="form-name" value="quote-request" />
+  <p class="quote-form__honeypot" aria-hidden="true">
+    <label>
+      Leave this field empty
+      <input name="website" tabindex="-1" autocomplete="off" />
+    </label>
+  </p>
+
+  <fieldset>
+    <legend>Your details</legend>
+    <div class="quote-form__grid">
+      <div class="quote-form__field">
+        <label for="quote-name">Name</label>
+        <input
+          id="quote-name"
+          name="name"
+          type="text"
+          autocomplete="name"
+          required
+        />
+      </div>
+      <div class="quote-form__field">
+        <label for="quote-company">Company</label>
+        <input
+          id="quote-company"
+          name="company"
+          type="text"
+          autocomplete="organization"
+          required
+        />
+      </div>
+      <div class="quote-form__field">
+        <label for="quote-email">Email address</label>
+        <input
+          id="quote-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+        />
+      </div>
+      <div class="quote-form__field">
+        <label for="quote-phone">Phone or WhatsApp number</label>
+        {
+          /*
+          `type="tel"` validates nothing on its own — browsers accept any
+          string, so "asdf" submitted successfully. The lookahead requires at
+          least nine digits anywhere in the value; the character class then
+          confines the rest to the separators people actually type. This does
+          not prove a number is reachable, and no pattern can. It catches the
+          error that actually happens: a mistyped or nonsense entry, which used
+          to be unrecoverable because the form collected no other way to reply.
+        */
+        }
+        <input
+          id="quote-phone"
+          name="phone"
+          type="tel"
+          autocomplete="tel"
+          inputmode="tel"
+          pattern="(?=(?:[^0-9]*[0-9]){9,})[0-9 +()-]{9,25}"
+          title="Enter at least nine digits. Spaces, +, - and brackets are allowed."
+          required
+        />
+      </div>
+      <div class="quote-form__field">
+        <label for="quote-customer-type">I am enquiring as</label>
+        <select id="quote-customer-type" name="customer-type" required>
+          <option value="">Choose one</option>
+          <option value="solar-installer-epc">Solar installer or EPC</option>
+          <option value="electrical-contractor">Electrical contractor</option>
+          <option value="business-project-team">Business or project team</option
+          >
+          <option value="homeowner">Homeowner</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Products required</legend>
+    <div class="quote-form__field">
+      <label for="quote-products">Products or part numbers</label>
+      <textarea
+        id="quote-products"
+        name="products"
+        rows="5"
+        placeholder="Enter product descriptions, quantities and part numbers where available."
+        aria-describedby="quote-products-hint"
+        required></textarea>
+      <p id="quote-products-hint" class="quote-form__hint">
+        Include quantities and your delivery area. If uploading a BOQ, enter
+        “See attached BOQ”.
+      </p>
+    </div>
+    <div class="quote-form__field">
+      <label for="quote-file"
+        >Attach a bill of quantities or product list (optional)</label
+      >
+      <input
+        id="quote-file"
+        name="bill-of-quantities"
+        type="file"
+        accept=".pdf,.csv,.xls,.xlsx,.doc,.docx"
+        aria-describedby="quote-file-hint quote-file-error"
+      />
+      <p class="quote-form__hint" id="quote-file-hint">
+        PDF, spreadsheet or Word document, up to 7.5 MB. Email larger files to <a
+          href={`mailto:${siteConfig.salesEmail}`}>{siteConfig.salesEmail}</a
+        >.
+      </p>
+      <p class="quote-form__error" id="quote-file-error" aria-live="polite"></p>
+    </div>
+  </fieldset>
+
+  <div class="quote-form__footer">
+    <p>
+      We collect the details you submit, including any optional attachment, and
+      use them only to respond to your enquiry and prepare your quote. Read our <a
+        href="/privacy/">privacy notice</a
+      >.
+    </p>
+    <button type="submit">Submit quotation request</button>
+  </div>
+</form>
+
+<script>
+  const fileInput = document.querySelector<HTMLInputElement>('#quote-file');
+  const fileError = document.querySelector<HTMLElement>('#quote-file-error');
+  if (fileInput && fileError) {
+    // Netlify caps the entire multipart request at 8 MB. Leave room for fields
+    // and multipart overhead; this check is progressive browser guidance.
+    const validateAttachment = () => {
+      const oversized = (fileInput.files?.[0]?.size ?? 0) > 7_500_000;
+      const message = oversized
+        ? 'This file is larger than 7.5 MB. Choose a smaller file or email it to the sales team using the link above.'
+        : '';
+      fileInput.setCustomValidity(message);
+      fileInput.toggleAttribute('aria-invalid', oversized);
+      if (oversized) fileInput.setAttribute('aria-invalid', 'true');
+      fileError.textContent = message;
+    };
+    fileInput.addEventListener('change', validateAttachment);
+    fileInput.form?.addEventListener('reset', () => {
+      fileInput.setCustomValidity('');
+      fileInput.removeAttribute('aria-invalid');
+      fileError.textContent = '';
+    });
+    validateAttachment();
+  }
+</script>
+
+<style>
+  .quote-form {
+    display: grid;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+
+  .quote-form__honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .quote-form fieldset {
+    display: grid;
+    gap: var(--space-5);
+    min-width: 0;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-background);
+  }
+
+  .quote-form legend {
+    padding-inline: var(--space-2);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+  }
+
+  .quote-form__grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .quote-form__field {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .quote-form label {
+    font-weight: 600;
+  }
+
+  .quote-form input,
+  .quote-form select,
+  .quote-form textarea {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    color: var(--color-text);
+  }
+
+  .quote-form textarea {
+    min-height: 9rem;
+    resize: vertical;
+  }
+
+  /* Disabled is signalled by colour and cursor, not by `opacity`. An opacity
+     wash would drop the label below the 4.5:1 floor by an amount that depends
+     on whatever is behind the field, which is exactly the kind of unmeasured
+     pair ARCHI §11 rules out. These three tokens are already measured against
+     each other: muted text is 6.03:1 on the muted surface.
+
+     `border-width` stays 1px in every state. State changes go to colour only,
+     so no state transition shifts the field's box and reflows the form. */
+  .quote-form input:disabled,
+  .quote-form select:disabled,
+  .quote-form textarea:disabled {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+  }
+
+  .quote-form input[type='file'] {
+    padding: var(--space-2);
+  }
+
+  .quote-form__hint,
+  .quote-form__footer p {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .quote-form__error {
+    color: var(--color-error);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+  }
+  .quote-form__error:empty {
+    display: none;
+  }
+  .quote-form input[aria-invalid='true'] {
+    border-color: var(--color-error);
+  }
+
+  .quote-form__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .quote-form__footer p {
+    max-width: 34rem;
+  }
+
+  .quote-form button {
+    min-height: 2.75rem;
+    padding: var(--space-2) var(--space-5);
+    border: 1px solid var(--color-cta);
+    border-radius: var(--radius-md);
+    background: var(--color-cta);
+    color: var(--color-cta-contrast);
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .quote-form button:hover,
+  .quote-form button:active {
+    border-color: var(--color-cta-hover);
+    background: var(--color-cta-hover);
+  }
+
+  /* This is the button that matters most for a pressed state: the form posts
+     to Netlify, so there is a round trip during which the only thing telling
+     the user their click registered is this rule. Same colour reasoning as
+     the fields above — the disabled label is measured, not faded. */
+  .quote-form button:disabled {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+  }
+
+  @media (min-width: 48rem) {
+    .quote-form__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,538 @@
+---
+import { getImage, Image } from 'astro:assets';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import PhotoGallery from '@/components/catalogue/PhotoGallery.astro';
+import VideoGallery from '@/components/catalogue/VideoGallery.astro';
+import Button from '@/components/ui/Button.astro';
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { sortCategories, validateCategories } from '@/lib/catalogue/categories';
+import { buildGalleryView, buildVideoView } from '@/lib/catalogue/gallery';
+import { buildSupplyBasesStatement } from '@/lib/config/contact';
+import {
+  filterPublishedProducts,
+  filterVisibleEntries,
+} from '@/lib/catalogue/visibility';
+import { getPrimaryCta } from '@/lib/navigation/cta';
+import { getBreadcrumbs } from '@/lib/navigation/breadcrumbs';
+import { buildVideoStructuredData } from '@/lib/seo/structured-data';
+import { siteConfig } from '@/site.config';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('categories');
+  const visible = filterVisibleEntries(entries, process.env.CONTEXT);
+  validateCategories(visible);
+  const sorted = sortCategories(visible);
+
+  const products = await getCollection('products');
+  const visibleProducts = filterPublishedProducts(products);
+  const hasPublishableCableContent = visibleProducts.some(
+    (entry) => entry.data.category === 'cables',
+  );
+
+  return sorted.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: {
+      entry,
+      relatedCategories: sorted
+        .filter((category) => category.id !== entry.id)
+        .map((category) => ({
+          name: category.data.name,
+          slug: category.data.slug,
+        })),
+      hasPublishableRelatedContent:
+        entry.data.relatedRoute === '/cables/' && hasPublishableCableContent,
+    },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'categories'>;
+  hasPublishableRelatedContent: boolean;
+  relatedCategories: { name: string; slug: string }[];
+}
+
+const { entry, hasPublishableRelatedContent, relatedCategories } = Astro.props;
+const title = entry.data.seoTitle ?? entry.data.name;
+const headline = entry.data.headline ?? entry.data.name;
+const supplyBases = buildSupplyBasesStatement(siteConfig);
+const primaryCta = getPrimaryCta();
+const breadcrumbs = getBreadcrumbs(`/products/${entry.data.slug}/`, {
+  currentLabel: entry.data.name,
+});
+const gallery = buildGalleryView(entry.data);
+const video = buildVideoView(entry.data);
+const hasTypicalVariants = Boolean(entry.data.typicalVariants?.length);
+const hasBrands = Boolean(entry.data.brands?.length);
+// The link preview for this range, rather than the site-wide `og.png`: these
+// pages are what gets pasted into WhatsApp and LinkedIn, and a photograph of
+// the actual range says more there than the logo does. Cropped to the 1.91:1
+// frame those previews use, and JPEG because not every unfurler reads WebP.
+const socialImage = entry.data.cardImage
+  ? (
+      await getImage({
+        src: entry.data.cardImage,
+        width: 1200,
+        height: 630,
+        fit: 'cover',
+        format: 'jpg',
+        quality: 80,
+      })
+    ).src
+  : undefined;
+// The header renders the card image as decorative, so its description lives on
+// the gallery entry for the same file.
+const socialImageAlt = entry.data.gallery?.find(
+  (photo) => photo.src.src === entry.data.cardImage?.src,
+)?.alt;
+const videoStructuredData = video
+  ? await Promise.all(
+      video.items.map(async (item) =>
+        buildVideoStructuredData(
+          {
+            title: item.title,
+            description: item.description,
+            thumbnailUrl: (
+              await getImage({
+                src: item.poster,
+                width: 1280,
+                format: 'webp',
+                quality: 80,
+              })
+            ).src,
+            src: item.src,
+            publishedOn: item.publishedOn,
+          },
+          siteConfig.siteUrl,
+        ),
+      ),
+    )
+  : undefined;
+---
+
+<BaseLayout
+  title={title}
+  description={entry.data.summary}
+  breadcrumbs={breadcrumbs}
+  socialImage={socialImage}
+  socialImageAlt={socialImageAlt}
+  structuredData={videoStructuredData}
+>
+  <Section surface="muted" headingId="category-heading">
+    <Container width="default">
+      <article class="category-content">
+        <header class="category-header">
+          <div class="category-header__copy">
+            <Eyebrow>Product range</Eyebrow>
+            <h1 id="category-heading">{headline}</h1>
+            <p class="category-content__intro">{entry.data.intro}</p>
+            {supplyBases && <p class="category-header__bases">{supplyBases}</p>}
+            {
+              primaryCta && (
+                <div class="category-header__cta">
+                  <Button href={primaryCta.href}>{primaryCta.label}</Button>
+                </div>
+              )
+            }
+          </div>
+          {
+            entry.data.cardImage && (
+              <Image
+                class="category-header__image"
+                src={entry.data.cardImage}
+                alt=""
+                widths={[480, 768, 1100]}
+                sizes="(min-width: 80rem) 480px, (min-width: 48rem) 40vw, calc(100vw - 32px)"
+                format="webp"
+                loading="eager"
+                fetchpriority="high"
+              />
+            )
+          }
+        </header>
+
+        <div
+          class:list={[
+            'category-overview',
+            (hasTypicalVariants || hasBrands) && 'category-overview--with-rail',
+          ]}
+        >
+          <section
+            class="category-content__range"
+            aria-labelledby="source-heading"
+          >
+            <h2 id="source-heading">
+              {entry.data.rangeHeading ?? 'The range includes'}
+            </h2>
+            <ul>
+              {entry.data.sourceItems.map((item) => <li>{item}</li>)}
+            </ul>
+          </section>
+
+          {
+            gallery && (
+              <div class="category-gallery-row">
+                <PhotoGallery
+                  photos={gallery.items}
+                  heading={gallery.heading}
+                  intro={gallery.intro}
+                  idPrefix={entry.data.slug}
+                  initiallyVisible={gallery.initiallyVisible}
+                  disclosureLabel={gallery.disclosureLabel}
+                />
+              </div>
+            )
+          }
+
+          {
+            (hasTypicalVariants || hasBrands) && (
+              <div class="category-rail">
+                {hasTypicalVariants && (
+                  <section
+                    class="category-content__variants"
+                    aria-labelledby="variants-heading"
+                  >
+                    <h2 id="variants-heading">Typical variants</h2>
+                    <ul>
+                      {entry.data.typicalVariants?.map((variant) => (
+                        <li>{variant}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                {hasBrands && (
+                  <section
+                    class="category-content__brands"
+                    aria-labelledby="brands-heading"
+                  >
+                    <h2 id="brands-heading">Brands</h2>
+                    <ul>
+                      {entry.data.brands?.map((brand) => (
+                        <li>{brand}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </div>
+            )
+          }
+        </div>
+
+        {
+          video && (
+            <VideoGallery
+              videos={video.items}
+              heading={video.heading}
+              intro={video.intro}
+              idPrefix={entry.data.slug}
+            />
+          )
+        }
+
+        {
+          entry.data.relatedRoute && hasPublishableRelatedContent && (
+            <p class="category-content__related">
+              <a href={entry.data.relatedRoute}>
+                Explore the related cable range
+              </a>
+            </p>
+          )
+        }
+        {
+          relatedCategories.length > 0 && (
+            <nav
+              class="related-ranges"
+              aria-labelledby="related-ranges-heading"
+            >
+              <Eyebrow>Complete your bill of materials</Eyebrow>
+              <h2 id="related-ranges-heading">Related product ranges</h2>
+              <ul>
+                {relatedCategories.map((category) => (
+                  <li>
+                    <a href={`/products/${category.slug}/`}>
+                      {category.name}
+                      <span aria-hidden="true">→</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )
+        }
+      </article>
+    </Container>
+  </Section>
+
+  {
+    primaryCta && (
+      <Section surface="inverted" headingId="category-cta-heading">
+        <Container width="narrow">
+          <div class="category-cta">
+            <h2 id="category-cta-heading">
+              Request current pricing and availability
+            </h2>
+            <p>
+              Submit your product list or bill of quantities for a
+              project-specific quotation.
+            </p>
+            <Button href={primaryCta.href}>{primaryCta.label}</Button>
+          </div>
+        </Container>
+      </Section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .category-content {
+    display: grid;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+
+  .category-header {
+    display: grid;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-inverted);
+    color: var(--color-text-inverted);
+    --color-cta: var(--color-cta-inverted);
+    --color-cta-hover: var(--color-cta-inverted-hover);
+    --color-cta-contrast: var(--color-cta-contrast-inverted);
+  }
+
+  .category-header__copy {
+    display: grid;
+    align-content: center;
+    gap: var(--space-4);
+    padding: clamp(1.5rem, 3vw, 3rem);
+  }
+  .category-header__image {
+    width: 100%;
+    height: 100%;
+    max-height: 30rem;
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .category-header h1 {
+    font-size: clamp(2rem, 3vw, 2.75rem);
+  }
+  .related-ranges {
+    display: grid;
+    gap: var(--space-3);
+    padding-block-start: var(--space-6);
+    border-block-start: 1px solid var(--color-border-subtle);
+  }
+  .related-ranges ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--space-3);
+    padding: 0;
+    list-style: none;
+  }
+  .related-ranges a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    height: 100%;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .related-ranges a:hover {
+    border-color: var(--color-accent);
+  }
+
+  .category-content h1,
+  .category-content h2,
+  .category-content p,
+  .category-content li {
+    overflow-wrap: anywhere;
+  }
+
+  .category-content__intro {
+    max-width: var(--measure);
+    margin: 0;
+    font-size: var(--font-size-lg);
+  }
+
+  .category-header__bases {
+    max-width: var(--measure);
+    margin: 0;
+    font-size: var(--font-size-sm);
+  }
+
+  .category-header__cta {
+    justify-self: start;
+  }
+
+  .category-overview {
+    display: grid;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+
+  .category-content__range {
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--color-background);
+  }
+
+  .category-content__range ul {
+    display: grid;
+    /* `start`, not the grid default of `stretch`. Otherwise any spare height in
+       the card is divided between the rows, and a one-line item renders 69px
+       tall with its text stranded at the top. */
+    align-content: start;
+    gap: var(--space-3);
+    padding: 0;
+    list-style: none;
+  }
+
+  .category-content__range li {
+    display: grid;
+    grid-template-columns: 0.5rem minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
+  }
+
+  .category-content__range li::before {
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-block-start: 0.55rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    content: '';
+  }
+
+  .category-gallery-row {
+    min-width: 0;
+  }
+
+  .category-rail {
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+
+  .category-content__variants,
+  .category-content__brands {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .category-content__variants {
+    padding: var(--space-4);
+    border-inline-start: 0.25rem solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  .category-content__variants h2,
+  .category-content__brands h2 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+  }
+
+  .category-content__variants ul {
+    display: grid;
+    gap: var(--space-2);
+    padding: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    list-style: none;
+  }
+
+  .category-content__brands {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--color-background);
+  }
+
+  .category-content__brands ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: 0;
+    list-style: none;
+  }
+
+  .category-content__brands li {
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-tint);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+  }
+
+  .category-content__related {
+    margin-block-start: calc(var(--space-2) * -1);
+  }
+
+  .category-cta {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 48rem) {
+    .category-header {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    }
+
+    .category-content__range ul {
+      /* Columns sized to their content and packed left, rather than two equal
+         halves of a wide card. Splitting 800px evenly strands ~240px of empty
+         space after each short item, which reads as two unrelated lists.
+         `minmax(0, max-content)` keeps a long item from overflowing. */
+      grid-template-columns: repeat(2, minmax(0, max-content));
+      justify-content: start;
+      column-gap: var(--space-7);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .category-overview--with-rail {
+      grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.42fr);
+      /* Each column keeps its natural height. Stretching them to match the
+         taller one leaves whichever card is shorter padded with dead space. */
+      align-items: start;
+    }
+
+    .category-overview--with-rail .category-content__range {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .category-overview--with-rail .category-gallery-row {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+
+    .category-overview--with-rail .category-rail {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .category-overview:not(.category-overview--with-rail)
+      .category-content__range,
+    .category-overview:not(.category-overview--with-rail)
+      .category-gallery-row {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

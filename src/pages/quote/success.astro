@@ -1,0 +1,51 @@
+---
+import Button from '@/components/ui/Button.astro';
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { siteConfig } from '@/site.config';
+---
+
+<BaseLayout
+  title={`Quote request received | ${siteConfig.displayName}`}
+  description="Your quotation request has been received by Era-Sure Renewables. The sales team will review your specifications and confirm any outstanding details."
+  robots="noindex, follow"
+>
+  <Section surface="inverted" headingId="success-heading">
+    <Container width="narrow">
+      <div class="success">
+        <Eyebrow>Submission confirmed</Eyebrow>
+        <h1 id="success-heading">Quotation request received</h1>
+        <p>
+          We will review the submitted information and contact you if any
+          specifications need to be confirmed before the quotation is prepared.
+        </p>
+        <div class="success__actions">
+          <Button href="/products/" variant="secondary">Browse products</Button>
+          <Button href="/contact/" variant="secondary"
+            >Contact Era-Sure directly</Button
+          >
+        </div>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .success {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .success p {
+    max-width: var(--measure);
+  }
+
+  .success__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-block-start: var(--space-2);
+  }
+</style>

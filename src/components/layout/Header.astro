@@ -1,0 +1,279 @@
+---
+import BrandLogo from '@/components/layout/BrandLogo.astro';
+import Container from '@/components/ui/Container.astro';
+import Button from '@/components/ui/Button.astro';
+import Nav from '@/components/layout/Nav.astro';
+import SocialIcon from '@/components/layout/SocialIcon.astro';
+import type { SocialIconName } from '@/components/layout/SocialIcon.astro';
+import { isConfirmed } from '@/lib/config/phone';
+import { siteConfig } from '@/site.config';
+import type { NavItem } from '@/lib/navigation/nav';
+import type { PrimaryCta } from '@/lib/navigation/cta';
+
+interface Props {
+  pathname: string;
+  navItems: NavItem[];
+  primaryCta?: PrimaryCta | null;
+}
+
+const { pathname, navItems, primaryCta } = Astro.props;
+
+// Declared in display order, then filtered — a growing if-chain was already
+// three pushes from unreadable when Facebook arrived. `isConfirmed` is the same
+// gate `buildContactDetails` applies, so a `TODO_CLIENT` sentinel cannot reach
+// an `href` here either.
+const socialLinks = (
+  [
+    { platform: 'Instagram', icon: 'instagram' },
+    { platform: 'LinkedIn', icon: 'linkedin' },
+    { platform: 'Facebook', icon: 'facebook' },
+  ] satisfies Array<{ platform: string; icon: SocialIconName }>
+).flatMap(({ platform, icon }) => {
+  const href = siteConfig.socialLinks?.[icon];
+
+  return isConfirmed(href) ? [{ platform, icon, href }] : [];
+});
+---
+
+<header class="site-header">
+  {
+    socialLinks.length > 0 && (
+      <div class="site-header__social-bar">
+        <Container>
+          <div class="site-header__utility">
+            <a class="site-header__coverage" href="/contact/">
+              {siteConfig.salesContacts
+                .map((contact) => contact.region)
+                .filter(isConfirmed)
+                .join(' · ')}
+              <span> · Nationwide delivery</span>
+            </a>
+            <nav class="header-social" aria-label="Social media">
+              <span class="header-social__label">Follow Era-Sure</span>
+              <ul>
+                {socialLinks.map((link) => (
+                  <li>
+                    <a
+                      class:list={[
+                        'header-social__link',
+                        `header-social__link--${link.icon}`,
+                      ]}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Era-Sure Renewables on ${link.platform}`}
+                    >
+                      <SocialIcon name={link.icon} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+        </Container>
+      </div>
+    )
+  }
+  <Container>
+    <div class="site-header__inner">
+      <div class="site-header__logo">
+        <BrandLogo />
+      </div>
+      <div class="site-header__nav">
+        <Nav pathname={pathname} navItems={navItems} />
+      </div>
+      {
+        primaryCta && (
+          <div class="site-header__cta">
+            <Button href={primaryCta.href}>{primaryCta.label}</Button>
+          </div>
+        )
+      }
+    </div>
+  </Container>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    z-index: 20;
+    inset-block-start: 0;
+    border-block-end: 1px solid var(--color-border-subtle);
+    background: var(--color-background);
+    box-shadow: 0 0.35rem 1.5rem
+      color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
+
+  .site-header__social-bar {
+    color: var(--color-text-inverted);
+    background: var(--color-surface-inverted);
+  }
+
+  .site-header__utility {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+  }
+  .site-header__coverage {
+    color: var(--color-text-inverted);
+    font-size: var(--font-size-sm);
+    text-decoration: none;
+  }
+  .site-header__coverage:hover {
+    color: var(--color-brand-green);
+  }
+  .site-header__coverage:focus-visible {
+    outline-color: var(--color-brand-green);
+  }
+
+  .header-social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    min-height: 2.5rem;
+  }
+
+  .header-social__label {
+    color: color-mix(in srgb, var(--color-text-inverted) 78%, transparent);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .header-social ul {
+    display: flex;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .header-social__link {
+    position: relative;
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    /* The one control for glyph size: `SocialIcon` sizes every mark at 1em, so
+       this sets all three at once. 1.25rem gives each a 20px box — 6px of clear
+       space each side of the 32px control, whole pixels, so nothing lands on a
+       sub-pixel boundary and gets snapped off-centre.
+
+       Two traps, both already sprung once. The box is not the glyph: each mark
+       reserves padding inside its own viewBox, so 20px of box renders 16px of
+       artwork (17.3px for Facebook, which is optically corrected). And the
+       marks must stay the same box as each other — differing sizes here is what
+       knocked two of them 0.45px off-centre. Adjust the set by this one value;
+       adjust a single mark in its `viewBox`. */
+    font-size: 1.25rem;
+    border: 1px solid
+      color-mix(in srgb, var(--color-text-inverted) 45%, transparent);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-inverted);
+    background: color-mix(in srgb, var(--color-text-inverted) 8%, transparent);
+    transition:
+      border-color 160ms ease,
+      background 160ms ease,
+      transform 160ms ease;
+  }
+
+  .header-social__link::before {
+    position: absolute;
+    inset: -0.4rem;
+    content: '';
+  }
+
+  /* The icon colour deliberately does NOT change on hover. It stays
+     `--color-text-inverted`, which is the colour every platform fill below is
+     measured against in `tokens.css`. */
+  .header-social__link:hover {
+    border-color: transparent;
+    transform: translateY(-0.08rem);
+  }
+
+  .header-social__link--instagram:hover {
+    background: var(--gradient-social-instagram);
+  }
+
+  .header-social__link--linkedin:hover {
+    background: var(--color-social-linkedin);
+  }
+
+  .header-social__link--facebook:hover {
+    background: var(--color-social-facebook);
+  }
+
+  .header-social__link:focus-visible {
+    outline: 0.2rem solid var(--color-brand-green);
+    outline-offset: 0.15rem;
+  }
+
+  .site-header__inner {
+    display: grid;
+    grid-template-areas: 'logo nav';
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    padding-block: var(--space-3);
+  }
+
+  .site-header__logo {
+    grid-area: logo;
+    min-width: 0;
+  }
+
+  .site-header__nav {
+    grid-area: nav;
+    min-width: 0;
+    justify-self: end;
+  }
+
+  .site-header__cta {
+    grid-area: cta;
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header-social__link {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 47.999rem) {
+    .site-header__coverage {
+      display: none;
+    }
+    .site-header__utility {
+      justify-content: center;
+    }
+    .site-header__logo {
+      max-width: 10.75rem;
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .site-header__coverage span {
+      display: none;
+    }
+    .header-social {
+      justify-content: flex-end;
+    }
+
+    .site-header__inner {
+      grid-template-areas: 'logo nav cta';
+      grid-template-columns: minmax(10rem, 12.5rem) minmax(0, 1fr) auto;
+    }
+
+    .site-header__cta {
+      display: block;
+    }
+  }
+  @media (min-width: 64rem) {
+    .site-header__coverage span {
+      display: inline;
+    }
+  }
+</style>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img" aria-labelledby="title description">
+  <title id="title">Main delivery photograph placeholder</title>
+  <desc id="description">A black development placeholder marking the position of the main delivery photograph.</desc>
+  <rect width="1200" height="800" fill="#050505" />
+  <rect x="40" y="40" width="1120" height="720" rx="28" fill="none" stroke="#343434" stroke-width="4" />
+  <text x="600" y="372" fill="#eaf2f4" font-family="Arial, sans-serif" font-size="46" font-weight="700" text-anchor="middle">DELIVERY PHOTO 01</text>
+  <text x="600" y="430" fill="#9da8ac" font-family="Arial, sans-serif" font-size="27" text-anchor="middle">Main image - client photo to follow</text>
+</svg>

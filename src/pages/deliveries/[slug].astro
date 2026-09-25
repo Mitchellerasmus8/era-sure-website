@@ -1,0 +1,252 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Button from '@/components/ui/Button.astro';
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import {
+  filterPublishableDeliveries,
+  validateDeliveryHighlights,
+} from '@/lib/deliveries/highlights';
+import { getBreadcrumbs } from '@/lib/navigation/breadcrumbs';
+import { getPrimaryCta } from '@/lib/navigation/cta';
+import { siteConfig } from '@/site.config';
+
+export async function getStaticPaths() {
+  const entries = filterPublishableDeliveries(
+    await getCollection('deliveries'),
+  );
+  validateDeliveryHighlights(entries);
+
+  return entries.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'deliveries'>;
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const breadcrumbs = getBreadcrumbs(`/deliveries/${data.slug}/`, {
+  currentLabel: data.title,
+});
+const primaryCta = getPrimaryCta();
+---
+
+<BaseLayout
+  title={`${data.title} | ${siteConfig.displayName}`}
+  description={data.summary}
+  breadcrumbs={breadcrumbs}
+>
+  <Section surface="muted" headingId="delivery-heading">
+    <Container width="narrow">
+      <div class="delivery-intro">
+        <Eyebrow>Delivery record</Eyebrow>
+        <h1 id="delivery-heading">{data.title}</h1>
+        <p class="delivery-summary">{data.summary}</p>
+        <dl class="delivery-facts">
+          <div>
+            <dt>Location</dt>
+            <dd>{data.location}</dd>
+          </div>
+          {
+            data.projectType && (
+              <div>
+                <dt>Project type</dt>
+                <dd>{data.projectType}</dd>
+              </div>
+            )
+          }
+          {
+            data.deliveryPeriod && (
+              <div>
+                <dt>Delivery period</dt>
+                <dd>{data.deliveryPeriod}</dd>
+              </div>
+            )
+          }
+        </dl>
+      </div>
+    </Container>
+  </Section>
+
+  <Section surface="default" headingId="photos-heading">
+    <Container>
+      <div class="section-heading">
+        <Eyebrow>Project photographs</Eyebrow>
+        <h2 id="photos-heading">Delivery gallery</h2>
+      </div>
+      <ul class="photo-grid">
+        {
+          data.images.map((image, index) => (
+            <li>
+              <figure>
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  widths={[640, 960, 1280]}
+                  sizes="(min-width: 64rem) 50vw, 100vw"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
+                {image.caption && <figcaption>{image.caption}</figcaption>}
+              </figure>
+            </li>
+          ))
+        }
+      </ul>
+      {
+        data.photoCredit && (
+          <p class="photo-credit">Photos: {data.photoCredit}</p>
+        )
+      }
+    </Container>
+  </Section>
+
+  <Section surface="muted" headingId="supplied-heading">
+    <Container width="narrow">
+      <div class="supplied-details">
+        <Eyebrow>Order details</Eyebrow>
+        <h2 id="supplied-heading">Equipment included</h2>
+        <ul>
+          {data.suppliedItems.map((item) => <li>{item}</li>)}
+        </ul>
+        {
+          data.socialUrl && (
+            <p>
+              <a href={data.socialUrl} rel="noopener noreferrer">
+                View the original social post
+              </a>
+            </p>
+          )
+        }
+        <p class="delivery-back-links">
+          <a href="/deliveries/">View all delivery highlights</a> ·{' '}
+          <a href="/products/">Browse product categories</a>
+        </p>
+      </div>
+    </Container>
+  </Section>
+
+  {
+    primaryCta && (
+      <Section surface="inverted" headingId="detail-cta-heading">
+        <Container width="narrow">
+          <div class="delivery-cta">
+            <Eyebrow>Quotations</Eyebrow>
+            <h2 id="detail-cta-heading">
+              Request pricing for similar equipment
+            </h2>
+            <p>
+              Submit a product list or bill of quantities. Era-Sure will confirm
+              current pricing, availability and delivery arrangements.
+            </p>
+            <div>
+              <Button href={primaryCta.href}>{primaryCta.label}</Button>
+            </div>
+          </div>
+        </Container>
+      </Section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .delivery-intro,
+  .supplied-details,
+  .delivery-cta {
+    display: grid;
+    gap: var(--space-4);
+    max-width: var(--measure);
+  }
+
+  .delivery-summary {
+    font-size: var(--font-size-lg);
+  }
+
+  .delivery-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    gap: var(--space-4);
+    margin: var(--space-2) 0 0;
+  }
+
+  .delivery-facts dt {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .delivery-facts dd {
+    margin-block-start: var(--space-1);
+    color: var(--color-text-muted);
+  }
+
+  .section-heading {
+    max-width: var(--measure);
+  }
+
+  .photo-grid {
+    display: grid;
+    gap: var(--space-5);
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .photo-grid li {
+    min-width: 0;
+  }
+
+  .photo-grid figure {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+  }
+
+  .photo-grid :global(img) {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+  }
+
+  .photo-grid figcaption {
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .photo-credit {
+    margin-block-start: var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .supplied-details ul {
+    display: grid;
+    gap: var(--space-2);
+    padding-inline-start: var(--space-5);
+  }
+
+  .delivery-back-links {
+    margin-block-start: var(--space-5);
+    font-size: var(--font-size-sm);
+  }
+
+  @media (min-width: 48rem) {
+    .photo-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .photo-grid li:first-child:last-child {
+      grid-column: 1 / -1;
+      max-width: 52rem;
+    }
+  }
+</style>

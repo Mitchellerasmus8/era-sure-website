@@ -1,0 +1,26 @@
+# All specification values below are invented and illustrative. They must be replaced with client-supplied or manufacturer-datasheet data before status becomes published.
+slug: 'solar-pv-cable-4mm2-single-core'
+name: 'Solar PV Cable 4 mm² Single Core'
+category: 'cables'
+status: 'draft'
+summary: 'Flexible single-core solar PV cable for typical rooftop and small commercial installations.'
+conductorMaterial: 'tinned-copper'
+crossSectionMm2: 4
+coreCount: 1
+voltageRating: '1.5/1.5 kV DC'
+currentRatingAmps: 55
+temperatureMinC: -40
+temperatureMaxC: 90
+insulationMaterial: 'XLPE'
+sheathMaterial: 'XLPE'
+uvResistant: true
+colours:
+  - 'black'
+  - 'red'
+lengthsM:
+  - 100
+  - 500
+standards:
+  - 'EN 50618'
+stockNote: 'Illustrative stock note; replace with confirmed availability.'
+minimumOrderQuantity: '1 drum'

@@ -1,0 +1,91 @@
+---
+import QuoteForm from '@/components/enquiry/QuoteForm.astro';
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { buildContactDetails } from '@/lib/config/contact';
+import { getBreadcrumbs } from '@/lib/navigation/breadcrumbs';
+import { siteConfig } from '@/site.config';
+
+const contactDetails = buildContactDetails(siteConfig);
+const breadcrumbs = getBreadcrumbs('/quote/');
+---
+
+<BaseLayout
+  title={`Request a quote | ${siteConfig.displayName}`}
+  description="Request a trade quotation for solar PV cables, switchgear, combiners, inverters and electrical supplies. Submit your part numbers or upload a bill of materials."
+  breadcrumbs={breadcrumbs}
+>
+  <Section surface="inverted" headingId="quote-heading">
+    <Container width="narrow">
+      <div class="quote-intro">
+        <Eyebrow>Product enquiry</Eyebrow>
+        <h1 id="quote-heading">Request a quotation</h1>
+        <p>
+          Provide the required products, part numbers or bill of quantities.
+          Era-Sure will confirm any outstanding specifications before preparing
+          the quotation.
+        </p>
+        {
+          contactDetails.responseNote && (
+            <p class="quote-intro__response">{contactDetails.responseNote}</p>
+          )
+        }
+      </div>
+    </Container>
+  </Section>
+
+  <Section surface="muted" headingId="quote-form-heading">
+    <Container width="narrow">
+      <div class="quote-content">
+        <div>
+          <Eyebrow>Requirements</Eyebrow>
+          <h2 id="quote-form-heading">Product and project information</h2>
+          <p>Provide a product list below, or attach a bill of quantities.</p>
+        </div>
+        <QuoteForm />
+      </div>
+    </Container>
+  </Section>
+
+  <Section surface="default" headingId="quote-alternative-heading">
+    <Container width="narrow">
+      <div class="quote-alternative">
+        <h2 id="quote-alternative-heading">Contact the sales team directly</h2>
+        <p>
+          The Era-Sure sales team is available by WhatsApp or phone on the <a
+            href="/contact/">contact page</a
+          >.
+        </p>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .quote-intro,
+  .quote-content,
+  .quote-alternative {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .quote-intro h1 {
+    max-width: 17ch;
+  }
+
+  .quote-intro p,
+  .quote-content > div:first-child {
+    max-width: var(--measure);
+  }
+
+  .quote-intro__response {
+    padding-inline-start: var(--space-4);
+    border-inline-start: 0.25rem solid var(--color-brand-green);
+  }
+
+  .quote-content {
+    gap: var(--space-6);
+  }
+</style>

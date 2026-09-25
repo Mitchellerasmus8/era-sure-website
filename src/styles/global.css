@@ -1,0 +1,100 @@
+@import '@fontsource-variable/ibm-plex-sans/wght.css';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+/* `clip`, not `hidden`: `hidden` on either element makes the other a scroll
+   container, which breaks the sticky header. `clip` does not. Nothing
+   currently overflows — the grids all use `minmax(0, 1fr)` and `body` carries
+   a floor width — so this is a guard against a future track that forgets, not
+   a fix for an observed scrollbar. */
+html,
+body {
+  overflow-x: clip;
+}
+
+html {
+  font-family: var(--font-family-sans);
+  font-size: 100%;
+  scroll-padding-block-start: 8.5rem;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-width: 20rem;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: var(--line-height-tight);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2rem, 3.5vw, 3.25rem);
+}
+h2 {
+  font-size: clamp(1.5rem, 2.4vw, 2.125rem);
+}
+h3 {
+  font-size: var(--font-size-xl);
+}
+
+p,
+li,
+dd {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--color-link);
+}
+
+/* `--color-link-hover` is re-pointed by `Section`'s inverted variant, exactly as
+   `--color-link` is — a dark hover colour would be unreadable there. */
+a:hover {
+  color: var(--color-link-hover);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img,
+picture,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 0.2rem solid var(--color-focus);
+  outline-offset: 0.2rem;
+}
+
+::selection {
+  background: var(--color-accent-tint);
+  color: var(--color-text);
+}

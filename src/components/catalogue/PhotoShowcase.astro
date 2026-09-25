@@ -1,0 +1,99 @@
+---
+import { Image } from 'astro:assets';
+import type { ShowcaseView } from '@/lib/catalogue/showcase';
+
+interface Props extends ShowcaseView {
+  /** The band sits under the home page's h1, so its heading is an h2 by default. */
+  headingLevel?: 2 | 3;
+  /**
+   * Supplied by the page, because the page is what points its `Section` at this
+   * heading via `aria-labelledby`. Owning the literal here would put the two
+   * halves of that reference in different files, where a rename breaks the
+   * association silently.
+   */
+  headingId: string;
+}
+
+const { items, heading, intro, headingLevel = 2, headingId } = Astro.props;
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+---
+
+<div class="photo-showcase">
+  <div class="photo-showcase__heading">
+    <Heading id={headingId}>{heading}</Heading>
+    <p>{intro}</p>
+  </div>
+
+  <ul class="photo-showcase__grid">
+    {
+      items.map((photo) => (
+        <li class="photo-showcase__tile">
+          <Image
+            src={photo.src}
+            alt={photo.alt}
+            widths={[320, 480, 640, 960]}
+            sizes="(min-width: 64rem) 25vw, (min-width: 48rem) 33vw, 50vw"
+            loading="lazy"
+            decoding="async"
+          />
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .photo-showcase {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .photo-showcase__heading {
+    display: grid;
+    gap: var(--space-3);
+    max-width: var(--measure);
+  }
+
+  .photo-showcase__heading h2,
+  .photo-showcase__heading h3,
+  .photo-showcase__heading p {
+    overflow-wrap: anywhere;
+  }
+
+  .photo-showcase__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .photo-showcase__tile {
+    min-width: 0;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-md);
+    background: var(--color-accent-tint);
+  }
+
+  .photo-showcase__tile :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Two columns, then four — three is deliberately skipped. The band carries
+     eight photographs, so a three-column step would leave a ragged 3-3-2 with
+     an orphan on the last row, which is the same defect this release removes
+     from the procurement grid. Both counts divide eight exactly.
+     This couples the column counts to `showcaseMaximum` in
+     `src/lib/catalogue/showcase.ts`; change one and re-check the other. */
+  @media (min-width: 48rem) {
+    .photo-showcase__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+  }
+</style>

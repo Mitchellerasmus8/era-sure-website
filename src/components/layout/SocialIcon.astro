@@ -1,0 +1,119 @@
+---
+/**
+ * The platform marks, drawn as SVG rather than in CSS or an icon font: the
+ * LinkedIn glyph was once the literal characters "in" set in Arial, which put a
+ * second font family on the page for two letterforms.
+ *
+ * Extracted from `Header.astro` when Facebook became the third platform. Two
+ * icons fit a ternary; three do not, and the alternative was a nested one
+ * sitting in the middle of the markup.
+ *
+ * Every mark inherits `currentColor` and renders at one shared box size, so the
+ * caller controls colour and scale with nothing but `color` and `font-size`.
+ * `aria-hidden` is unconditional — these always sit inside a link that carries
+ * its own accessible name.
+ *
+ * **Sizing lives here, not in the caller.** Astro scopes styles to the
+ * component that declares them, so a `.header-social__icon` rule in
+ * `Header.astro` silently stops matching once the `<svg>` moves into this file
+ * — which is exactly what happened when Facebook was added: the marks lost
+ * their `width`/`height` and rendered at 30px inside a 32px circle. A component
+ * that owns its markup has to own the rules that size it.
+ *
+ * **Each `viewBox` is derived, not drawn.** The three marks are third-party
+ * paths with no shared convention: measured with `getBBox()`, Instagram's
+ * rounded square and Facebook's disc each span 20.0 units centred on (12,12),
+ * while LinkedIn's spans 17.18 centred on (11.86, 11.878) — off-centre in its
+ * own artboard. Left on a common `0 0 24 24` they render at different sizes and
+ * LinkedIn sits slightly high.
+ *
+ * So each `viewBox` is recomputed as a square centred on that mark's own
+ * artwork, sized `extent / fill` for a chosen fill fraction:
+ *
+ * | Mark      | Artwork centre   | Extent | Fill  | viewBox                        |
+ * | --------- | ---------------- | ------ | ----- | ------------------------------ |
+ * | Instagram | 12, 12           | 20.0   | 0.8   | `-0.5 -0.5 25 25`              |
+ * | LinkedIn  | 11.86, 11.878    | 17.176 | 0.8   | `1.125 1.143 21.47 21.47`      |
+ * | Facebook  | 12, 12           | 20.0   | 0.864 | `0.426 0.426 23.148 23.148`    |
+ *
+ * Equal fill means equal rendered artwork, and a square centred on the artwork
+ * means centring is exact by construction rather than by luck. Facebook's 0.864
+ * is 0.8 × 1.08 — see below.
+ *
+ * **Facebook is deliberately 8% larger.** It is the only mark that is a plain
+ * disc, and a circle bounded by the same square reads smaller than that square:
+ * it encloses ~79% of the area and has no corners to reach the edges. Matching
+ * it *geometrically* to the others is what makes it look undersized. 8% is the
+ * usual optical correction for a circular glyph in a set with squarer ones.
+ *
+ * If a mark is ever redrawn, re-measure with `getBBox()` and recompute its row.
+ * These are derived numbers; none of them is a preference.
+ */
+export type SocialIconName = 'facebook' | 'instagram' | 'linkedin';
+
+interface Props {
+  name: SocialIconName;
+}
+
+const { name } = Astro.props;
+const className = `social-icon social-icon--${name}`;
+---
+
+{
+  name === 'instagram' && (
+    <svg
+      class={className}
+      viewBox="-0.5 -0.5 25 25"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.4" cy="6.6" r="1.3" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+{
+  name === 'linkedin' && (
+    <svg
+      class={className}
+      viewBox="1.125 1.143 21.47 21.47"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M7.119 20.452H3.555V9h3.564v11.452zM5.337 7.433a2.064 2.064 0 1 1 0-4.129 2.064 2.064 0 0 1 0 4.129zM20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286z" />
+    </svg>
+  )
+}
+{
+  name === 'facebook' && (
+    <svg
+      class={className}
+      viewBox="0.426 0.426 23.148 23.148"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M22 12.061C22 6.505 17.523 2 12 2S2 6.505 2 12.061c0 5.022 3.657 9.184 8.438 9.939v-7.03H7.898v-2.909h2.54V9.845c0-2.522 1.492-3.915 3.777-3.915 1.094 0 2.238.196 2.238.196v2.476h-1.261c-1.243 0-1.63.777-1.63 1.573v1.886h2.774l-.443 2.909h-2.331v7.03C18.343 21.245 22 17.083 22 12.061z" />
+    </svg>
+  )
+}
+
+<style>
+  /* One size for all three, deliberately. Sizing them differently in CSS is
+     what broke centring: at `font-size: 1.4rem` the two corrected marks got a
+     19.264px box against LinkedIn's 22.4px, and centring a fractional box in
+     the 32px control put its edge on a sub-pixel boundary the renderer then
+     snapped — measurably 0.45px up and to the left, which is visible.
+
+     Identical boxes land on identical whole pixels. Every difference between
+     the marks is expressed in the `viewBox` above instead, where it costs no
+     layout. Keep the caller's `font-size` at a value that makes this an
+     integer: the control is 32px, so a 20px box leaves a clean 6px each side. */
+  .social-icon {
+    width: 1em;
+    height: 1em;
+    color: currentColor;
+  }
+</style>

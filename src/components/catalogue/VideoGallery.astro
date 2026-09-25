@@ -1,0 +1,149 @@
+---
+import { getImage } from 'astro:assets';
+import type { VideoViewItem } from '@/lib/catalogue/gallery';
+
+interface Props {
+  videos: VideoViewItem[];
+  heading: string;
+  intro: string;
+  idPrefix: string;
+  headingLevel?: 2 | 3;
+}
+
+const { videos, heading, intro, idPrefix, headingLevel = 2 } = Astro.props;
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+const videosId = `${idPrefix}-videos`;
+const headingId = `${idPrefix}-videos-heading`;
+
+const renderedVideos = await Promise.all(
+  videos.map(async (video) => ({
+    ...video,
+    posterSrc: (
+      await getImage({
+        src: video.poster,
+        width: 900,
+        format: 'webp',
+        quality: 80,
+      })
+    ).src,
+    // The clip's own dimensions, taken from its poster. The poster is extracted
+    // from the video by scripts/convert-client-videos.ps1 with the aspect ratio
+    // preserved, so this is the video's shape by construction rather than by a
+    // number someone typed. It matters: these are phone clips shot in portrait,
+    // and a hard-coded 16/9 letterboxes them into thick black bars while still
+    // reserving the wrong space — the exact layout shift the attributes exist
+    // to prevent.
+    width: video.poster.width,
+    height: video.poster.height,
+  })),
+);
+---
+
+<section id={videosId} class="video-gallery" aria-labelledby={headingId}>
+  <div class="video-gallery__heading">
+    <Heading id={headingId}>{heading}</Heading>
+    <p>{intro}</p>
+  </div>
+
+  <div class="video-gallery__grid">
+    {
+      renderedVideos.map((video) => (
+        <figure class="video-gallery__figure">
+          {/* `muted` is belt to the braces of `-an`: the published MP4s carry no
+              audio track at all, because these are site clips whose soundtrack is
+              whatever bystanders happened to be saying. A muted player would still
+              ship those words to anyone who downloaded the file. This attribute
+              only guarantees silence for a clip that somehow slipped through with
+              a track on it. */}
+          <video
+            controls
+            muted
+            preload="none"
+            playsinline
+            poster={video.posterSrc}
+            width={video.width}
+            height={video.height}
+            aria-label={video.title}
+          >
+            <source src={video.src} type="video/mp4" />
+            <a href={video.src}>Download {video.title}</a>
+          </video>
+          <figcaption>
+            <p class="video-gallery__title">{video.title}</p>
+            <p>{video.description}</p>
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .video-gallery {
+    display: grid;
+    gap: var(--space-5);
+    padding-block: var(--space-2);
+  }
+
+  .video-gallery__heading {
+    display: grid;
+    gap: var(--space-3);
+    max-width: var(--measure);
+  }
+
+  .video-gallery__heading h2,
+  .video-gallery__heading h3,
+  .video-gallery__heading p,
+  .video-gallery__figure p {
+    overflow-wrap: anywhere;
+  }
+
+  /* Tracks are sized by the column, not by the count of clips. A fixed
+     two-column rule reads fine at three videos and badly at six, where the
+     second column simply grows a longer tail; `auto-fill` instead takes as many
+     ~15rem columns as the container affords — two on a tablet, three or four on
+     a desktop — so adding clips widens the block before it lengthens it.
+     `min(100%, …)` keeps the track from overflowing a phone narrower than the
+     minimum. */
+  .video-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: var(--space-5) var(--space-4);
+    align-items: start;
+  }
+
+  .video-gallery__figure {
+    display: grid;
+    gap: var(--space-3);
+    /* Capped rather than full-width: these are portrait phone clips, and one
+       clip alone gets a full-width track that would stand it taller than the
+       viewport. The cap sits on the figure so the caption keeps the video's
+       width instead of running out beside it. */
+    max-width: 22rem;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .video-gallery__figure video {
+    display: block;
+    /* The poster and width/height attributes preserve the clip's own shape
+       without an inline style, which the production CSP blocks. */
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-inverted);
+  }
+
+  .video-gallery__figure figcaption {
+    display: grid;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .video-gallery__title {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+</style>

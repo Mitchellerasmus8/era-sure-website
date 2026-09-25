@@ -1,0 +1,22 @@
+slug: example-supply-delivery
+title: Example supply and delivery highlight
+order: 1
+status: draft
+featured: true
+summary: Replace this preview entry with confirmed details from a real Era-Sure delivery before publishing.
+location: South Africa
+projectType: Renewable-energy equipment supply
+deliveryPeriod: Date to be confirmed
+suppliedItems:
+  - Equipment list to be confirmed
+images:
+  - src: ./_example/delivery-photo-placeholder.svg
+    alt: Placeholder showing where a client-supplied delivery photograph will appear.
+    caption: Main delivery photograph - development placeholder only.
+  - src: ./_example/black-placeholder-2.svg
+    alt: Black placeholder showing the position of a closer equipment photograph.
+    caption: Equipment detail - development placeholder only.
+  - src: ./_example/black-placeholder-3.svg
+    alt: Black placeholder showing the position of an additional delivery photograph.
+    caption: Additional delivery view - development placeholder only.
+publicationPermission: pending

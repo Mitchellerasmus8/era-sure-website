@@ -1,0 +1,19 @@
+# Build output and generated files
+dist/
+.astro/
+node_modules/
+package-lock.json
+coverage/
+playwright-report/
+test-results/
+
+# Hand-maintained documentation, wrapped deliberately; reformatting it would
+# produce large diffs unrelated to whatever change is in flight.
+docs/
+.claude/
+
+# Saved browser evidence is generated output.
+.playwright-mcp/
+
+# Local plain-text exports of Word documents.
+*.docx.md

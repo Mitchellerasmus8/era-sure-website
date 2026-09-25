@@ -1,0 +1,187 @@
+---
+import { Image } from 'astro:assets';
+import type { DeliveryHighlightEntry } from '@/lib/deliveries/highlights';
+import { getDeliveryUrl } from '@/lib/deliveries/highlights';
+
+interface Props {
+  entry: DeliveryHighlightEntry;
+  headingLevel?: 2 | 3;
+}
+
+const { entry, headingLevel = 2 } = Astro.props;
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+const { data } = entry;
+const cover = data.images[0];
+const href = getDeliveryUrl(data.slug);
+---
+
+<a class="delivery-card" data-delivery-slug={data.slug} href={href}>
+  <span class="delivery-card__visual" aria-hidden="true">
+    <Image
+      src={cover.src}
+      alt=""
+      widths={[480, 720, 960]}
+      sizes="(min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw"
+      loading="lazy"
+      decoding="async"
+    />
+    <span class="delivery-card__badge">Era-Sure delivery</span>
+  </span>
+  <span class="delivery-card__body">
+    <span class="delivery-card__meta">
+      <span>{data.location}</span>
+      {data.deliveryPeriod && <span>{data.deliveryPeriod}</span>}
+    </span>
+    <Heading class="delivery-card__title">{data.title}</Heading>
+    <span class="delivery-card__summary">{data.summary}</span>
+    <span class="delivery-card__items">
+      <strong>Equipment</strong>
+      <span>{data.suppliedItems.slice(0, 3).join(' · ')}</span>
+    </span>
+    <span class="delivery-card__cue" aria-hidden="true">
+      View delivery <span>→</span>
+    </span>
+  </span>
+</a>
+
+<style>
+  .delivery-card {
+    display: flex;
+    overflow: hidden;
+    height: 100%;
+    min-width: 0;
+    flex-direction: column;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    /* Muted, not `--color-background`: both callers — the home page's
+       deliveries band and the `/deliveries/` list — are `default` bands, so a
+       white fill left the card visible only as its 1px outline (ARCHI §11). */
+    background: var(--color-surface);
+    box-shadow: 0 0 0 rgb(11 37 48 / 0%);
+    color: var(--color-text);
+    text-decoration: none;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  .delivery-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-md);
+    color: var(--color-text);
+    transform: translateY(-0.15rem);
+  }
+
+  .delivery-card__visual {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 3 / 2;
+    background: var(--color-accent-tint);
+  }
+
+  .delivery-card__visual :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 240ms ease;
+  }
+
+  .delivery-card:hover .delivery-card__visual :global(img) {
+    transform: scale(1.025);
+  }
+
+  .delivery-card__badge {
+    position: absolute;
+    inset: auto auto var(--space-3) var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: rgb(11 37 48 / 92%);
+    color: var(--color-text-inverted);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .delivery-card__body {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    padding: var(--space-5);
+  }
+
+  .delivery-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .delivery-card__meta span + span::before {
+    margin-inline-end: var(--space-3);
+    content: '·';
+  }
+
+  .delivery-card__title {
+    margin-block-start: var(--space-3);
+    font-size: var(--font-size-xl);
+    overflow-wrap: anywhere;
+  }
+
+  .delivery-card__summary {
+    margin-block-start: var(--space-3);
+    overflow-wrap: anywhere;
+  }
+
+  .delivery-card__items {
+    display: grid;
+    gap: var(--space-1);
+    margin-block-start: var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    overflow-wrap: anywhere;
+  }
+
+  .delivery-card__items strong {
+    color: var(--color-text);
+  }
+
+  .delivery-card__cue {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-block-start: auto;
+    padding-block-start: var(--space-5);
+    color: var(--color-accent);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+  }
+
+  .delivery-card__cue > span {
+    font-size: var(--font-size-lg);
+    line-height: 1;
+    transition: transform 160ms ease;
+  }
+
+  .delivery-card:hover .delivery-card__cue > span {
+    transform: translateX(0.2rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .delivery-card,
+    .delivery-card__visual :global(img),
+    .delivery-card__cue > span {
+      transition: none;
+    }
+
+    .delivery-card:hover,
+    .delivery-card:hover .delivery-card__visual :global(img),
+    .delivery-card:hover .delivery-card__cue > span {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Website Editing Cheat Sheet</title>
+<style>
+  @page { size: A4; margin: 11mm 13mm; }
+  :root { --ink: #16202a; --muted: #4f5d6b; --accent: #0b6e4f; --line: #d5dde3; --tint: #eef5f2; --warn: #9a3412; --warn-tint: #fff4ec; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 9.6pt/1.38 "Segoe UI", Arial, sans-serif; color: var(--ink); background: #fff; }
+  h1 { font-size: 17pt; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 2px 0 9px; font-size: 9.4pt; }
+  h2 { font-size: 10.6pt; margin: 0 0 4px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.04em; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .box { border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px 8px; }
+  .box.wide { grid-column: 1 / -1; }
+  .box.tint { background: var(--tint); border-color: #cfe3da; }
+  .box.warn { background: var(--warn-tint); border-color: #f3d3bd; }
+  .box.warn h2 { color: var(--warn); }
+  ol, ul { margin: 0; padding-left: 17px; }
+  li { margin: 1.5px 0; }
+  b { font-weight: 650; }
+  code, .ui { font-family: inherit; background: #f1f4f6; border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; font-size: 9pt; white-space: nowrap; }
+  .accounts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 2px; }
+  .acc { border-left: 3px solid var(--accent); padding: 1px 0 1px 7px; }
+  .acc b { display: block; }
+  .acc span { color: var(--muted); font-size: 8.8pt; }
+  .foot { margin-top: 8px; color: var(--muted); font-size: 8.6pt; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+  <h1>Updating the Era-Sure website</h1>
+  <p class="sub">www.erasuretrading.co.za &nbsp;·&nbsp; A one-page guide to making small changes yourself, with no coding.</p>
+
+  <div class="box wide tint">
+    <h2>Your four accounts</h2>
+    <div class="accounts">
+      <div class="acc"><b>Pages CMS</b><span>app.pagescms.org<br>Where you edit. Sign in with GitHub.</span></div>
+      <div class="acc"><b>GitHub</b><span>github.com<br>Stores the website and every change ever made.</span></div>
+      <div class="acc"><b>Netlify</b><span>app.netlify.com<br>Publishes the site. Quote-form enquiries arrive here.</span></div>
+      <div class="acc"><b>Search Console</b><span>search.google.com/search-console<br>How the site shows up on Google.</span></div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:8px">
+    <div class="box">
+      <h2>Add a photo to a category</h2>
+      <ol>
+        <li>Go to <b>app.pagescms.org</b>, sign in with GitHub and open <b>era-sure-website</b>.</li>
+        <li>Click <span class="ui">Product categories</span>, then the category (e.g. <b>Cables</b>).</li>
+        <li>Scroll to <b>Gallery photos</b> and click <span class="ui">+ Add</span>.</li>
+        <li>Click the <b>Photo</b> box. Open the folder with the <b>same name as the category</b>, then click <span class="ui">Upload</span> and choose your picture.</li>
+        <li>Fill in <b>Description of the photo</b>: one plain sentence about what's in it. Google reads this.</li>
+        <li><b>Photo source</b>: choose <i>Era-Sure's own photo</i>.</li>
+        <li>Drag the photo up or down to change its position, then click <span class="ui">Save</span>.</li>
+      </ol>
+    </div>
+
+    <div class="box">
+      <h2>Change text or remove a photo</h2>
+      <ul>
+        <li><b>Text</b>: open the category, edit any box, click <span class="ui">Save</span>.</li>
+        <li><b>Remove a photo</b>: open its row in <b>Gallery photos</b>, use the bin/remove icon, then <span class="ui">Save</span>. Keep at least one photo.</li>
+        <li><b>Card photo</b>: the picture on the category's card on the home and products pages.</li>
+        <li><b>Items supplied / Brands</b>: one item per line. Use <span class="ui">+ Add</span> for a new line.</li>
+      </ul>
+      <h2 style="margin-top:7px">Add a delivery highlight</h2>
+      <ol>
+        <li><span class="ui">Delivery highlights</span> → <span class="ui">Add an entry</span>.</li>
+        <li>Fill in the title, web address (e.g. <code>limpopo-cable-supply</code>), summary, location (province only), items and 1–8 photos.</li>
+        <li>Leave it on <b>Draft</b> until the customer agrees. Then set <b>Customer permission</b> to <i>Confirmed</i> and <b>Status</b> to <i>Published</i>.</li>
+      </ol>
+    </div>
+
+    <div class="box">
+      <h2>After you click Save</h2>
+      <ul>
+        <li>The live site updates in <b>about 2–3 minutes</b>. Refresh the page to see it.</li>
+        <li>Not showing? Open <b>Netlify → Deploys</b>. Green <i>Published</i> means it's done; red <i>Failed</i> means something was rejected.</li>
+        <li><b>A failed save cannot break the site.</b> The previous version stays live. Undo your last change, or send Timm a screenshot of the red deploy.</li>
+        <li>Every change is saved in GitHub history, so nothing is ever truly lost.</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>Photo tips</h2>
+      <ul>
+        <li>Use <b>JPG or PNG</b>. iPhone photos are often <b>HEIC</b>, which won't upload. Set iPhone → Settings → Camera → Formats → <i>Most Compatible</i>, or send the photo to yourself on WhatsApp or email first.</li>
+        <li>Landscape (sideways) photos look best. Use good light and a clean background.</li>
+        <li>Only use photos you took or own. Never use pictures from Google or supplier websites.</li>
+        <li>Blur or crop out faces, number plates and customer names, unless the customer has agreed.</li>
+      </ul>
+    </div>
+
+    <div class="box wide warn">
+      <h2>Leave these to the developer</h2>
+      <ul style="columns:2; column-gap:22px">
+        <li>New pages, new categories or layout / design changes</li>
+        <li>Videos, and stock photos (these need licence credits)</li>
+        <li>Anything in Netlify's <b>Domain</b> or <b>Build</b> settings</li>
+        <li>Changing a web address that is already published</li>
+        <li>The phone number, email and address in the site footer</li>
+        <li>A save that fails twice in a row</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot"><span>Developer: Timm · timmgarde@gmail.com</span><span>Keep your GitHub login safe: whoever has it controls the website.</span></div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# All specification values below are invented and illustrative. They must be replaced with client-supplied or manufacturer-datasheet data before status becomes published.
+slug: 'solar-pv-cable-4mm2-twin-core'
+name: 'Solar PV Cable 4 mm² Twin Core'
+category: 'cables'
+status: 'draft'
+summary: 'Twin-core solar PV cable for applications where paired conductors simplify installation.'
+conductorMaterial: 'tinned-copper'
+crossSectionMm2: 4
+coreCount: 2
+voltageRating: '1.5/1.5 kV DC'
+temperatureMinC: -40
+temperatureMaxC: 90

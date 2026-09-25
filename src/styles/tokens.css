@@ -1,0 +1,154 @@
+/*
+ * Brand-family values measured against the white, muted and inverted Section
+ * surfaces. The brand guide may change VALUES, not token NAMES.
+ */
+:root {
+  --color-background: #ffffff;
+  --color-surface: #f2f7f8;
+  --color-surface-inverted: #0b2530;
+
+  /* Body text: 16.04:1 on white and 14.84:1 on muted. */
+  --color-text: #10242b;
+  /* Muted text: 6.52:1 on white and 6.03:1 on muted. */
+  --color-text-muted: #4c6169;
+  /* Inverted text: 14.00:1 on the inverted surface. */
+  --color-text-inverted: #eaf2f4;
+
+  /* Accent: 6.33:1 on white and 5.86:1 on muted. */
+  --color-accent: #00697d;
+  /* Accent hover: 9.08:1 on white and 8.40:1 on muted. */
+  --color-accent-hover: #00505f;
+  --color-accent-contrast: #ffffff;
+  --color-link: var(--color-accent);
+  --color-link-hover: var(--color-accent-hover);
+  /* Inverted links: 9.03:1 on the inverted surface. */
+  --color-link-inverted: #7dd956;
+  --color-accent-tint: #e2f1f4;
+
+  /* White CTA text is 6.33:1 on the CTA and 9.08:1 on CTA hover. */
+  --color-cta: #00697d;
+  --color-cta-contrast: #ffffff;
+  --color-cta-hover: #00505f;
+
+  /* The CTA on the inverted surface, re-pointed by `Section` in that variant.
+     The teal fill above is the right colour on light surfaces, but measures
+     only 2.51:1 against #0b2530 (1.75:1 on hover) — the label stays legible
+     while the control itself all but disappears, which is WCAG 1.4.11 and the
+     same failure ARCHI §11 records for the old secondary button. Axe does not
+     catch it: it does not evaluate a button's fill against the band behind it.
+     The lime is the dark-surface accent this palette was designed around. */
+  --color-cta-inverted: #7dd956; /* 9.03:1 against the inverted surface */
+  --color-cta-inverted-hover: #9ae47b; /* 10.41:1 */
+  --color-cta-contrast-inverted: #0b2530; /* 9.03:1 on fill, 10.41:1 on hover */
+
+  /* Borders: 3.48:1 on white, 3.22:1 on muted and 4.56:1 inverted. */
+  --color-border: #768d97;
+  /* Decorative separators only; inputs and focus indicators keep the stronger border. */
+  --color-border-subtle: #d5e1e5;
+  --color-error: #9c2525;
+  /* Focus: 3.50:1 on white, 3.24:1 on muted and 4.54:1 inverted. */
+  --color-focus: #0096b1;
+
+  /* GRAPHIC ONLY. */
+  --color-brand-teal: #0096b1;
+  /* GRAPHIC ONLY. This green is 1.76:1 on white; never use it for text or
+     borders on a light surface. */
+  --color-brand-green: #7dd956;
+  /* GRAPHIC ONLY. Ratios are 4.03:1 on white, 3.73:1 on muted and 3.94:1
+     inverted: it clears the 3:1 UI floor, not the 4.5:1 text floor. */
+  --color-brand-green-deep: #458f27;
+
+  /* GRAPHIC ONLY, and NOT Era-Sure's palette: these are the two platforms' own
+     brand values, used solely as the hover fill of the social links in the
+     inverted header bar. Never use them for text or borders.
+
+     The icon sits on the fill in `--color-text-inverted`, so the fill is
+     measured like any other surface. LinkedIn blue reads 5.01:1 under it.
+     The Instagram gradient runs 5.73:1 (purple) to 3.45:1 (red) across the
+     region the 1rem glyph actually covers — all clear of the 3:1 icon floor.
+
+     The red stop sits at 75%, not the 55% the brand gradient normally uses.
+     The orange tail measures 1.84:1 under the icon colour, which fails even
+     the UI floor; at 75% the interpolation to orange begins outside the 1rem
+     icon box and only reaches the corner of the 2rem circle, so no part of
+     the glyph ever lands on it. Moving this stop back puts a sub-2:1 fill
+     under the icon. */
+  /* The WhatsApp FAB is `position: fixed`, so unlike every other filled control
+     on the site it floats over BOTH the white page and the `#0b2530` inverted
+     bands. Its fill is therefore measured against both, and the white glyph
+     against the fill — three pairs, not one.
+
+     `#25d366`, WhatsApp's primary brand green, fails: the white glyph reads
+     1.98:1 on it, below even the 3:1 UI floor, and the button's own shape is
+     the same 1.98:1 against the white page. Axe passes it — an SVG stroke on
+     a background is not text, so nothing in the automated gate looks at it.
+
+     `#128c7e` is WhatsApp's own darker brand green, so the control still reads
+     as WhatsApp. It measures 4.14:1 under the glyph, 4.14:1 against the white
+     page and 3.84:1 against the inverted bands. Do NOT darken it further to
+     buy glyph contrast: 3.99:1 is the arithmetic ceiling for the worse of the
+     two surfaces, so this is within a hair of the best any colour can do here,
+     and every step darker trades the inverted band below 3:1 (`#0e6f64` is
+     6.04:1 on white but 2.63:1 on the bands). Lighter fails the glyph.
+
+     For the same reason the fill does NOT change on hover — there is no room
+     to move it without pushing one of the three pairs under the floor. Hover
+     is carried by elevation and the lift instead. */
+  --color-social-whatsapp: #128c7e;
+  --color-social-whatsapp-ink: #ffffff;
+
+  --color-social-linkedin: #0a66c2;
+  /* Both hover fills carry a white glyph (`--color-text-inverted`), which is
+     the pair that had to be measured: 5.53:1 on LinkedIn and 4.23:1 on
+     Facebook. Both clear the 3:1 floor for non-text graphics with room to
+     spare, so unlike the WhatsApp fill above neither is pinned to its ceiling.
+     These are the platforms' own brand blues; if either is ever adjusted for
+     taste, re-measure the glyph rather than assuming the margin survives. */
+  --color-social-facebook: #1877f2;
+  --gradient-social-instagram: linear-gradient(
+    135deg,
+    #833ab4,
+    #fd1d1d 75%,
+    #fcb045
+  );
+
+  --font-family-sans:
+    'IBM Plex Sans Variable', ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+  --font-size-4xl: 2.75rem;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
+  --measure: 65ch;
+
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  --radius-none: 0;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-pill: 9999px;
+
+  --shadow-md: 0 0.75rem 1.75rem rgb(11 37 48 / 12%);
+
+  --breakpoint-sm: 30rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+}

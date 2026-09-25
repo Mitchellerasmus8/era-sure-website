@@ -1,0 +1,95 @@
+---
+interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary';
+}
+
+const { href, variant = 'primary' } = Astro.props;
+---
+
+<a class:list={['button', `button--${variant}`]} href={href}>
+  <slot />
+</a>
+
+<style>
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    padding: var(--space-2) var(--space-5);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .button--primary {
+    border-color: var(--color-cta);
+    background: var(--color-cta);
+    box-shadow: var(--shadow-md);
+    color: var(--color-cta-contrast);
+  }
+
+  .button--primary:hover {
+    border-color: var(--color-cta-hover);
+    background: var(--color-cta-hover);
+    color: var(--color-cta-contrast);
+    transform: translateY(-0.1rem);
+  }
+
+  /* Outline, drawn in currentColor, so it adapts to whatever surface it sits
+     on. A fixed accent fill would be 2.25:1 against the inverted surface —
+     legible text, but indistinguishable as a control. Inheriting the section's
+     text colour keeps it correct on every surface by construction. */
+  .button--secondary {
+    border-color: currentColor;
+    background: transparent;
+    color: inherit;
+  }
+
+  .button--secondary:hover {
+    background: var(--color-accent-tint);
+    color: var(--color-text);
+    border-color: var(--color-accent);
+  }
+
+  /* `:disabled` is deliberately absent: this control is an `<a>`, and the
+     pseudo-class does not match anchors. There is no disabled state to style
+     because a link cannot have one — if a disabled CTA is ever needed here,
+     the element has to become a `<button>` first. `:active` is the whole of
+     the press feedback: the hover lift drops back to rest, so the control
+     reads as pushed down rather than continuing to float. */
+  .button:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  .button--primary:active {
+    border-color: var(--color-cta-hover);
+    background: var(--color-cta-hover);
+  }
+
+  .button--secondary:active {
+    background: var(--color-accent-tint);
+    color: var(--color-text);
+    border-color: var(--color-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button {
+      transition: none;
+    }
+
+    .button:hover {
+      transform: none;
+    }
+  }
+</style>

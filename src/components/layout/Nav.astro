@@ -1,0 +1,419 @@
+---
+import type { NavItem } from '@/lib/navigation/nav';
+
+interface Props {
+  pathname: string;
+  navItems: NavItem[];
+}
+
+const { pathname, navItems } = Astro.props;
+const currentPath = pathname.replace(/\/+$/, '') || '/';
+const normaliseHref = (href: string) => href.replace(/\/+$/, '') || '/';
+---
+
+<nav
+  class="site-navigation"
+  data-site-navigation
+  aria-label="Primary navigation"
+>
+  <button
+    class="site-navigation__toggle"
+    data-nav-toggle
+    type="button"
+    aria-label="Toggle menu"
+    aria-controls="primary-navigation"
+    aria-expanded="false"
+  >
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </button>
+
+  <div class="site-navigation__backdrop" data-nav-backdrop aria-hidden="true">
+  </div>
+
+  <div class="site-navigation__drawer" id="primary-navigation" data-nav-drawer>
+    <button
+      class="site-navigation__close"
+      data-nav-close
+      type="button"
+      aria-label="Close menu"
+    >
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+    <p class="site-navigation__heading">Menu</p>
+    <ul class="site-navigation__list">
+      {
+        navItems.map((item) => (
+          <li class="site-navigation__item">
+            <a
+              class="site-navigation__link"
+              href={item.href}
+              aria-current={
+                normaliseHref(item.href) === currentPath ? 'page' : undefined
+              }
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <a class="site-navigation__quote" href="/quote/"
+      >Request a quote <span aria-hidden="true">→</span></a
+    >
+  </div>
+</nav>
+
+<script>
+  const navigation = document.querySelector<HTMLElement>(
+    '[data-site-navigation]',
+  );
+  const toggle =
+    navigation?.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const drawer = navigation?.querySelector<HTMLElement>('[data-nav-drawer]');
+  const backdrop = navigation?.querySelector<HTMLElement>(
+    '[data-nav-backdrop]',
+  );
+  const close =
+    navigation?.querySelector<HTMLButtonElement>('[data-nav-close]');
+  const links = drawer?.querySelectorAll<HTMLAnchorElement>('a[href]');
+  const desktopNavigation = window.matchMedia('(min-width: 48rem)');
+
+  if (navigation && toggle && drawer && backdrop && close) {
+    navigation.setAttribute('data-js-ready', '');
+
+    // `aria-hidden` is deliberately not set on the drawer. Off-canvas it is
+    // `visibility: hidden`, which already removes it from the accessibility
+    // tree and the tab order — and the attribute cannot be kept truthful
+    // while the panel slides out, because it is still visible and focusable
+    // for the length of that transition. Setting both states the attribute
+    // and the stylesheet disagree, which is what axe reported.
+    const setOpen = (isOpen: boolean, restoreFocus = false) => {
+      toggle.setAttribute('aria-expanded', String(isOpen));
+      navigation.toggleAttribute('data-open', isOpen);
+      document.documentElement.toggleAttribute('data-navigation-open', isOpen);
+      if (isOpen) {
+        drawer.setAttribute('role', 'dialog');
+        drawer.setAttribute('aria-modal', 'true');
+        drawer.setAttribute('aria-label', 'Menu');
+      } else {
+        drawer.removeAttribute('role');
+        drawer.removeAttribute('aria-modal');
+        drawer.removeAttribute('aria-label');
+      }
+
+      if (!isOpen && restoreFocus) {
+        toggle.focus();
+      }
+    };
+
+    setOpen(false);
+
+    toggle.addEventListener('click', () => {
+      const isOpen = toggle.getAttribute('aria-expanded') !== 'true';
+      setOpen(isOpen);
+
+      if (isOpen) {
+        window.setTimeout(() => close.focus(), 0);
+      }
+    });
+
+    close.addEventListener('click', () => setOpen(false, true));
+    backdrop.addEventListener('click', () => setOpen(false, true));
+    links?.forEach((link) => {
+      link.addEventListener('click', () => setOpen(false));
+    });
+
+    navigation.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        setOpen(false, true);
+      }
+      if (event.key === 'Tab' && navigation.hasAttribute('data-open')) {
+        const focusable = [
+          ...drawer.querySelectorAll<HTMLElement>('a[href], button'),
+        ].filter((element) => element.getClientRects().length > 0);
+        const first = focusable[0];
+        const last = focusable.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    });
+
+    desktopNavigation.addEventListener('change', () => {
+      const focusWasInDrawer = drawer.contains(document.activeElement);
+      setOpen(false);
+      if (focusWasInDrawer) {
+        if (desktopNavigation.matches) links?.[0]?.focus();
+        else toggle.focus();
+      }
+    });
+  }
+</script>
+
+<style>
+  .site-navigation {
+    display: flex;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+
+  .site-navigation__toggle {
+    position: relative;
+    z-index: 42;
+    display: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .site-navigation__toggle:hover {
+    background: var(--color-surface);
+  }
+
+  .site-navigation__toggle span {
+    display: block;
+    width: 1.45rem;
+    height: 0.13rem;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    transform-origin: center;
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
+  }
+
+  .site-navigation__backdrop {
+    display: none;
+  }
+
+  .site-navigation__close {
+    display: none;
+  }
+
+  .site-navigation__drawer {
+    min-width: 0;
+  }
+
+  .site-navigation__heading {
+    display: none;
+  }
+
+  .site-navigation__quote {
+    display: none;
+  }
+
+  .site-navigation__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-navigation__link {
+    display: inline-block;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-pill);
+    color: var(--color-link);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .site-navigation__link:hover,
+  .site-navigation__link:active,
+  .site-navigation__link[aria-current='page'] {
+    background: var(--color-accent-tint);
+    color: var(--color-text);
+  }
+
+  @media (max-width: 47.999rem) {
+    :global(html[data-navigation-open]) {
+      overflow: hidden;
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__toggle {
+      display: flex;
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__backdrop {
+      position: fixed;
+      z-index: 38;
+      inset: 0;
+      display: block;
+      visibility: hidden;
+      background: rgb(11 37 48 / 55%);
+      opacity: 0;
+      /* `visibility` is switched, never interpolated: a transitioned
+         visibility reports its start value for the first frame, so the panel
+         is unfocusable just as focus moves into it and still focusable just
+         as it is announced closed. Opening flips it immediately (the
+         `[data-open]` rule below zeroes the delay); closing defers the switch
+         until the slide has finished. */
+      transition:
+        opacity 180ms ease,
+        visibility 0s linear 180ms;
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__drawer {
+      position: fixed;
+      z-index: 40;
+      inset-block: 0;
+      inset-inline-end: 0;
+      width: min(82vw, 20rem);
+      padding: 5.75rem var(--space-5) var(--space-6);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      visibility: hidden;
+      background: var(--color-background);
+      box-shadow: -1rem 0 3rem rgb(11 37 48 / 18%);
+      transform: translateX(105%);
+      transition:
+        transform 200ms ease,
+        visibility 0s linear 200ms;
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__close {
+      position: absolute;
+      inset-block-start: var(--space-4);
+      inset-inline-end: var(--space-4);
+      display: grid;
+      width: 2.75rem;
+      height: 2.75rem;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__close span {
+      position: absolute;
+      width: 1.45rem;
+      height: 0.13rem;
+      border-radius: var(--radius-pill);
+      background: currentColor;
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__close span:first-child {
+      transform: rotate(45deg);
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__close span:last-child {
+      transform: rotate(-45deg);
+    }
+
+    .site-navigation[data-js-ready][data-open] .site-navigation__backdrop,
+    .site-navigation[data-js-ready][data-open] .site-navigation__drawer {
+      visibility: visible;
+      transition-delay: 0s;
+    }
+
+    .site-navigation[data-js-ready][data-open] .site-navigation__backdrop {
+      opacity: 1;
+    }
+
+    .site-navigation[data-js-ready][data-open] .site-navigation__drawer {
+      transform: translateX(0);
+    }
+
+    .site-navigation[data-js-ready][data-open] > .site-navigation__toggle {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__heading {
+      display: block;
+      margin-block-end: var(--space-5);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__list {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__quote {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+      min-height: 3rem;
+      margin-block-start: var(--space-5);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      background: var(--color-cta);
+      color: var(--color-cta-contrast);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__link {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-height: 3rem;
+      padding: var(--space-2) 0;
+      border-radius: 0;
+      color: var(--color-text);
+      font-size: var(--font-size-lg);
+    }
+
+    .site-navigation[data-js-ready] .site-navigation__link:hover,
+    .site-navigation[data-js-ready]
+      .site-navigation__link[aria-current='page'] {
+      background: transparent;
+      color: var(--color-accent);
+    }
+
+    .site-navigation[data-js-ready]
+      .site-navigation__link[aria-current='page'] {
+      box-shadow: inset 0.2rem 0 var(--color-accent);
+      padding-inline-start: var(--space-3);
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .site-navigation {
+      margin-inline-start: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-navigation__toggle span,
+    .site-navigation__close span,
+    .site-navigation[data-js-ready] .site-navigation__backdrop,
+    .site-navigation[data-js-ready] .site-navigation__drawer,
+    .site-navigation__link {
+      transition: none;
+    }
+  }
+</style>

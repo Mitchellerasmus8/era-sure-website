@@ -1,0 +1,151 @@
+---
+import type { SalesContactLink } from '@/lib/config/sales-contacts';
+
+interface Props extends SalesContactLink {
+  headingLevel: 2 | 3;
+}
+
+const {
+  id,
+  name,
+  role,
+  region,
+  hub,
+  phone,
+  whatsapp,
+  telHref,
+  whatsAppHref,
+  headingLevel,
+} = Astro.props;
+const headingId = `sales-contact-${id}-heading`;
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+const initials = name
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part.charAt(0))
+  .join('');
+---
+
+<section class="contact-card" aria-labelledby={headingId}>
+  <div class="contact-card__identity">
+    <span class="contact-card__avatar" aria-hidden="true">{initials}</span>
+    <div>
+      <Heading id={headingId}>{name}</Heading>
+      {role && <p class="contact-card__role">{role}</p>}
+    </div>
+  </div>
+  {
+    region && (
+      <p>
+        <span class="contact-card__label">Region:</span> {region}
+      </p>
+    )
+  }
+  {
+    hub && (
+      <p>
+        <span class="contact-card__label">Hub:</span> {hub}
+      </p>
+    )
+  }
+  {
+    /* The number is part of the link text, not decoration: two contacts means
+      two WhatsApp links on one page, and without it they share an accessible
+      name. */
+  }
+  <div class="contact-card__links">
+    <a
+      class="contact-card__link contact-card__link--whatsapp"
+      href={whatsAppHref}
+    >
+      WhatsApp {whatsapp}
+    </a>
+    <a class="contact-card__link" href={telHref}>Call {phone}</a>
+  </div>
+</section>
+
+<style>
+  /* Background and text colour are set as a pair. The card was extracted from a
+     default-surface section, but as a component it can now be dropped into a
+     muted or inverted one — where inheriting the section's colour onto this
+     fixed light background would leave light text on white. Setting both makes
+     the card correct on any surface by construction rather than by remembering
+     to check, which is the fix ARCHI §11 prefers. */
+  .contact-card {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    color: var(--color-text);
+    /* Same reason, and the sharper edge of it: `Section`'s inverted variant
+       re-points `--color-link` to the lime, which is 9.03:1 on that band but
+       1.76:1 on this card's white. The card owns its surface, so it restores
+       the light-surface link colours (6.33:1) for its own subtree. */
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
+  }
+
+  .contact-card h2,
+  .contact-card h3 {
+    overflow-wrap: anywhere;
+  }
+
+  .contact-card__identity {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-3);
+    margin-block-end: var(--space-1);
+  }
+
+  .contact-card__avatar {
+    display: grid;
+    width: 3rem;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-tint);
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .contact-card__role,
+  .contact-card__label {
+    color: var(--color-text-muted);
+  }
+
+  .contact-card__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-block-start: var(--space-2);
+  }
+
+  .contact-card__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .contact-card__links .contact-card__link--whatsapp {
+    border-color: var(--color-cta);
+    background: var(--color-cta);
+    color: var(--color-cta-contrast);
+  }
+
+  .contact-card__links .contact-card__link--whatsapp:hover {
+    border-color: var(--color-cta-hover);
+    background: var(--color-cta-hover);
+    color: var(--color-cta-contrast);
+  }
+</style>

@@ -1,0 +1,45 @@
+# Build output
+dist/
+.astro/
+.output/
+
+# Dependencies
+node_modules/
+
+# Netlify
+.netlify/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Test artifacts
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# Client media drop — the *input* to scripts/convert-client-photos.ps1, not project
+# source. Tens of megabytes of HEIC and HEVC originals carrying GPS EXIF; the
+# converted, metadata-stripped derivatives under src/assets/photography/ are what
+# belongs in git.
+Website pictures_/
+
+# AI-assistant and browser-automation working files (local to each machine)
+.claude/
+.agents/
+.playwright-mcp/
+
+# Editor & OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*

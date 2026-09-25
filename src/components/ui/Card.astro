@@ -1,0 +1,46 @@
+---
+// The bordered panel used for contact details, process steps and proof points.
+//
+// ARCHI §11 held `Card` back on the grounds that "a primitive without a caller
+// is a guess about the future". It now has callers: the same border, radius,
+// padding and fill had been hand-rolled four times (`SalesContactCard`, the
+// contact detail groups, the quotation steps, the About proof points), which is
+// the point at which the copies start to drift apart instead of the guess.
+interface Props {
+  /** A card inside a list has to stay an `li` for the list to keep its items. */
+  as?: 'div' | 'li' | 'section' | 'article';
+  /** Density, matching `Section`'s second axis. Exactly two, no third. */
+  padding?: 'default' | 'compact';
+}
+
+// Annotated explicitly: rendering a dynamic `<Tag>` changes how Astro generates
+// the props binding, and `Props` is left unreferenced without this.
+const { as: Tag = 'div', padding = 'default' }: Props = Astro.props;
+---
+
+<Tag class:list={['card', padding === 'compact' && 'card--compact']}>
+  <slot />
+</Tag>
+
+<style>
+  .card {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    color: var(--color-text);
+    /* The card owns its surface. `Section`'s inverted variant re-points
+       --color-link to the lime, which reads 9.03:1 on that band but 1.76:1 on
+       this white fill, so the light-surface link colours are restored for the
+       card's subtree. Same reasoning as `SalesContactCard`. */
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
+  }
+
+  .card--compact {
+    padding: var(--space-4);
+  }
+</style>

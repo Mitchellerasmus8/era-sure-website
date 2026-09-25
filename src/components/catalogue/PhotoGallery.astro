@@ -1,0 +1,603 @@
+---
+import { getImage, Image } from 'astro:assets';
+import type { GalleryPhoto } from '@/lib/catalogue/gallery';
+
+interface Props {
+  photos: GalleryPhoto[];
+  heading: string;
+  intro: string;
+  idPrefix: string;
+  initiallyVisible: number;
+  disclosureLabel: string | null;
+  headingLevel?: 2 | 3;
+}
+
+const {
+  photos,
+  heading,
+  intro,
+  idPrefix,
+  initiallyVisible,
+  disclosureLabel,
+  headingLevel = 2,
+} = Astro.props;
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+const galleryId = `${idPrefix}-gallery`;
+const headingId = `${idPrefix}-gallery-heading`;
+const gridId = `${idPrefix}-gallery-grid`;
+const lightboxId = `${idPrefix}-gallery-lightbox`;
+const captionId = `${idPrefix}-gallery-caption`;
+const CreditHeading = `h${headingLevel + 1}` as 'h3' | 'h4';
+
+/**
+ * The lightbox has one live caption node, so its credit mirror is deliberately
+ * plain text. The server-rendered list below carries the linked attribution;
+ * this string keeps the same creator, title, licence and modification context
+ * available after a visitor opens the photograph.
+ */
+const formatCreditForLightbox = (
+  credit: NonNullable<GalleryPhoto['credit']>,
+): string =>
+  [
+    `Photo credit: ${credit.creator}`,
+    credit.title,
+    credit.license,
+    credit.modification ? `Modification: ${credit.modification}` : null,
+  ]
+    .filter((part): part is string => part !== null)
+    .join(' — ');
+
+const renderedPhotos = await Promise.all(
+  photos.map(async (photo) => ({
+    ...photo,
+    fullSrc: (
+      await getImage({
+        src: photo.src,
+        width: 1400,
+        format: 'webp',
+        quality: 82,
+      })
+    ).src,
+  })),
+);
+
+// Keep credits outside the grid's client-side disclosure state: every credited
+// photograph remains attributable even when its thumbnail is temporarily hidden.
+const creditedPhotos = renderedPhotos.flatMap((photo) =>
+  photo.credit === undefined ? [] : [{ ...photo, credit: photo.credit }],
+);
+---
+
+<section
+  id={galleryId}
+  class="photo-gallery"
+  data-photo-gallery
+  aria-labelledby={headingId}
+>
+  <div class="photo-gallery__heading">
+    <Heading id={headingId}>{heading}</Heading>
+    <p>{intro}</p>
+  </div>
+
+  <div
+    id={gridId}
+    class="photo-gallery__grid"
+    data-gallery-grid
+    data-initially-visible={initiallyVisible}
+  >
+    {
+      renderedPhotos.map((photo, index) => (
+        <a
+          class="photo-gallery__link"
+          href={photo.fullSrc}
+          data-gallery-trigger
+          data-gallery-index={index}
+          data-full-src={photo.fullSrc}
+          data-image-alt={photo.alt}
+          data-image-caption={photo.caption}
+          data-image-credit={
+            photo.credit === undefined
+              ? undefined
+              : formatCreditForLightbox(photo.credit)
+          }
+        >
+          <span class="photo-gallery__image">
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              widths={[240, 360, 480]}
+              sizes="(min-width: 48rem) 9rem, 30vw"
+              loading="lazy"
+              decoding="async"
+            />
+          </span>
+        </a>
+      ))
+    }
+  </div>
+
+  {
+    disclosureLabel !== null && (
+      <button
+        type="button"
+        class="photo-gallery__disclosure"
+        data-gallery-disclosure
+        data-disclosure-label={disclosureLabel}
+        aria-controls={gridId}
+        aria-expanded="false"
+        hidden
+      >
+        {disclosureLabel}
+      </button>
+    )
+  }
+
+  {
+    /* After the disclosure button, not between it and the grid: the button
+      controls the grid and belongs next to it. Outside the grid either way, so
+      collapsing the thumbnails never hides an attribution. */
+  }
+  {
+    creditedPhotos.length > 0 && (
+      <div class="photo-gallery__credits" data-photo-credits>
+        <CreditHeading>Photo credits</CreditHeading>
+        <ul>
+          {creditedPhotos.map((photo) => (
+            <li>
+              <strong class="photo-gallery__credit-name">
+                {photo.caption ?? photo.alt}
+              </strong>
+              <span class="photo-gallery__credit-details">
+                {photo.credit.creator};{' '}
+                <a href={photo.credit.sourceUrl}>{photo.credit.title}</a>;{' '}
+                <a href={photo.credit.licenseUrl}>{photo.credit.license}</a>
+                {photo.credit.modification && (
+                  <>; Modification: {photo.credit.modification}</>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
+  <dialog
+    id={lightboxId}
+    class="photo-gallery__lightbox"
+    data-gallery-lightbox
+    aria-label="Enlarged photograph"
+    aria-describedby={captionId}
+  >
+    <div class="photo-gallery__lightbox-panel">
+      <div class="photo-gallery__toolbar">
+        <p
+          class="photo-gallery__counter"
+          data-gallery-counter
+          aria-live="polite"
+        >
+          1 of {renderedPhotos.length}
+        </p>
+        <button
+          type="button"
+          class="photo-gallery__close"
+          data-gallery-close
+          aria-label="Close enlarged image"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="photo-gallery__lightbox-media">
+        {
+          renderedPhotos.length > 1 && (
+            <button
+              type="button"
+              class="photo-gallery__control photo-gallery__control--previous"
+              data-gallery-previous
+              aria-label="Previous photograph"
+            >
+              <span aria-hidden="true">&#8592;</span>
+            </button>
+          )
+        }
+        <img data-gallery-image alt="" />
+        {
+          renderedPhotos.length > 1 && (
+            <button
+              type="button"
+              class="photo-gallery__control photo-gallery__control--next"
+              data-gallery-next
+              aria-label="Next photograph"
+            >
+              <span aria-hidden="true">&#8594;</span>
+            </button>
+          )
+        }
+      </div>
+
+      <p id={captionId} class="photo-gallery__caption" data-gallery-caption></p>
+    </div>
+  </dialog>
+</section>
+
+<script>
+  document
+    .querySelectorAll<HTMLElement>('[data-photo-gallery]')
+    .forEach((gallery) => {
+      const grid = gallery.querySelector<HTMLElement>('[data-gallery-grid]');
+      const lightbox = gallery.querySelector<HTMLDialogElement>(
+        '[data-gallery-lightbox]',
+      );
+      const lightboxImage = gallery.querySelector<HTMLImageElement>(
+        '[data-gallery-image]',
+      );
+      const lightboxCaption = gallery.querySelector<HTMLElement>(
+        '[data-gallery-caption]',
+      );
+      const counter = gallery.querySelector<HTMLElement>(
+        '[data-gallery-counter]',
+      );
+      const closeButton = gallery.querySelector<HTMLButtonElement>(
+        '[data-gallery-close]',
+      );
+      const previousButton = gallery.querySelector<HTMLButtonElement>(
+        '[data-gallery-previous]',
+      );
+      const nextButton = gallery.querySelector<HTMLButtonElement>(
+        '[data-gallery-next]',
+      );
+      const disclosure = gallery.querySelector<HTMLButtonElement>(
+        '[data-gallery-disclosure]',
+      );
+      const triggers = Array.from(
+        gallery.querySelectorAll<HTMLAnchorElement>('[data-gallery-trigger]'),
+      );
+
+      if (
+        !grid ||
+        !lightbox ||
+        !lightboxImage ||
+        !lightboxCaption ||
+        !counter
+      ) {
+        return;
+      }
+
+      let currentIndex = 0;
+      let triggeringThumbnail: HTMLAnchorElement | null = null;
+
+      const updateLightbox = (index: number) => {
+        const trigger = triggers[index];
+        if (!trigger) return;
+
+        currentIndex = index;
+        lightboxImage.src = trigger.dataset.fullSrc ?? trigger.href;
+        lightboxImage.alt = trigger.dataset.imageAlt ?? '';
+        const caption = trigger.dataset.imageCaption ?? '';
+        const credit = trigger.dataset.imageCredit ?? '';
+        lightboxCaption.textContent = [caption, credit]
+          .filter(Boolean)
+          .join(' — ');
+        counter.textContent = `${currentIndex + 1} of ${triggers.length}`;
+      };
+
+      const openLightbox = (index: number, trigger: HTMLAnchorElement) => {
+        triggeringThumbnail = trigger;
+        updateLightbox(index);
+        if (!lightbox.open) {
+          lightbox.showModal();
+        }
+      };
+
+      triggers.forEach((trigger, index) => {
+        trigger.addEventListener('click', (event) => {
+          event.preventDefault();
+          openLightbox(index, trigger);
+        });
+      });
+
+      closeButton?.addEventListener('click', () => lightbox.close());
+
+      previousButton?.addEventListener('click', () => {
+        updateLightbox((currentIndex - 1 + triggers.length) % triggers.length);
+      });
+
+      nextButton?.addEventListener('click', () => {
+        updateLightbox((currentIndex + 1) % triggers.length);
+      });
+
+      lightbox.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft' && triggers.length > 1) {
+          event.preventDefault();
+          updateLightbox(
+            (currentIndex - 1 + triggers.length) % triggers.length,
+          );
+        }
+
+        if (event.key === 'ArrowRight' && triggers.length > 1) {
+          event.preventDefault();
+          updateLightbox((currentIndex + 1) % triggers.length);
+        }
+      });
+
+      lightbox.addEventListener('click', (event) => {
+        if (event.target === lightbox) {
+          lightbox.close();
+        }
+      });
+
+      lightbox.addEventListener('close', () => {
+        lightboxImage.removeAttribute('src');
+        lightboxImage.alt = '';
+        lightboxCaption.textContent = '';
+        triggeringThumbnail?.focus();
+      });
+
+      const initialLabel = disclosure?.dataset.disclosureLabel ?? '';
+      const initiallyVisible = Number(grid.dataset.initiallyVisible);
+
+      disclosure?.addEventListener('click', () => {
+        const expanded = disclosure.getAttribute('aria-expanded') === 'true';
+        grid.classList.toggle('photo-gallery__grid--collapsed', expanded);
+        disclosure.setAttribute('aria-expanded', String(!expanded));
+        disclosure.textContent = expanded
+          ? initialLabel
+          : 'Show fewer photographs';
+      });
+
+      if (disclosure && Number.isFinite(initiallyVisible)) {
+        triggers.forEach((trigger, index) => {
+          if (index >= initiallyVisible) {
+            trigger.classList.add('photo-gallery__link--collapsed');
+          }
+        });
+        grid.classList.add('photo-gallery__grid--collapsed');
+        disclosure.hidden = false;
+      }
+    });
+</script>
+
+<style>
+  .photo-gallery {
+    display: grid;
+    gap: var(--space-5);
+    padding-block: var(--space-2);
+  }
+
+  .photo-gallery__heading {
+    display: grid;
+    gap: var(--space-3);
+    max-width: var(--measure);
+  }
+
+  .photo-gallery__heading h2,
+  .photo-gallery__heading h3,
+  .photo-gallery__heading p {
+    overflow-wrap: anywhere;
+  }
+
+  .photo-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: var(--space-2);
+  }
+
+  .photo-gallery__grid--collapsed .photo-gallery__link--collapsed {
+    display: none;
+  }
+
+  .photo-gallery__credits {
+    display: grid;
+    gap: var(--space-3);
+    padding-block-start: var(--space-4);
+    border-block-start: 1px solid var(--color-border);
+  }
+
+  .photo-gallery__credits h3,
+  .photo-gallery__credits h4 {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .photo-gallery__credits ul {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding-inline-start: var(--space-5);
+  }
+
+  .photo-gallery__credit-name,
+  .photo-gallery__credit-details {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  .photo-gallery__link {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    aspect-ratio: 1;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-accent-tint);
+    color: inherit;
+    cursor: zoom-in;
+  }
+
+  .photo-gallery__link:hover {
+    color: inherit;
+  }
+
+  .photo-gallery__link:focus-visible {
+    outline-offset: -0.2rem;
+  }
+
+  .photo-gallery__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .photo-gallery__image :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 180ms ease;
+  }
+
+  .photo-gallery__link:hover .photo-gallery__image :global(img) {
+    transform: scale(1.025);
+  }
+
+  .photo-gallery__disclosure {
+    justify-self: start;
+    min-height: 2.75rem;
+    padding: var(--space-2) var(--space-5);
+    border: 1px solid currentColor;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-accent);
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .photo-gallery__disclosure:hover {
+    background: var(--color-accent-tint);
+    color: var(--color-text);
+  }
+
+  .photo-gallery__lightbox {
+    position: fixed;
+    inset: 50% auto auto 50%;
+    width: min(92vw, 75rem);
+    max-width: none;
+    max-height: 92vh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-lg);
+    background: transparent;
+    box-shadow: var(--shadow-md);
+    transform: translate(-50%, -50%);
+  }
+
+  .photo-gallery__lightbox::backdrop {
+    background: color-mix(
+      in srgb,
+      var(--color-surface-inverted) 86%,
+      transparent
+    );
+    backdrop-filter: blur(0.2rem);
+  }
+
+  .photo-gallery__lightbox-panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-background);
+  }
+
+  .photo-gallery__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  }
+
+  .photo-gallery__counter {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .photo-gallery__close {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-background);
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: var(--font-size-2xl);
+    line-height: 1;
+    place-items: center;
+  }
+
+  .photo-gallery__close:hover {
+    background: var(--color-accent-tint);
+    color: var(--color-text);
+  }
+
+  .photo-gallery__lightbox-media {
+    position: relative;
+    background: var(--color-surface-inverted);
+  }
+
+  .photo-gallery__lightbox-media > img {
+    display: block;
+    width: 100%;
+    max-height: calc(92vh - 8rem);
+    object-fit: contain;
+  }
+
+  .photo-gallery__control {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--color-text-inverted);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-inverted);
+    color: var(--color-text-inverted);
+    cursor: pointer;
+    line-height: 1;
+    place-items: center;
+    transform: translateY(-50%);
+  }
+
+  .photo-gallery__control:hover {
+    background: var(--color-accent);
+    color: var(--color-accent-contrast);
+  }
+
+  .photo-gallery__control--previous {
+    inset-inline-start: var(--space-3);
+  }
+
+  .photo-gallery__control--next {
+    inset-inline-end: var(--space-3);
+  }
+
+  .photo-gallery__caption {
+    min-height: var(--space-6);
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    overflow-wrap: anywhere;
+  }
+
+  @media (min-width: 48rem) {
+    .photo-gallery__grid {
+      grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .photo-gallery__image :global(img),
+    .photo-gallery__lightbox,
+    .photo-gallery__control {
+      transition: none;
+    }
+
+    .photo-gallery__link:hover .photo-gallery__image :global(img) {
+      transform: none;
+    }
+  }
+</style>

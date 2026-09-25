@@ -1,0 +1,143 @@
+---
+import { getCollection } from 'astro:content';
+import ProductCard from '@/components/catalogue/ProductCard.astro';
+import Container from '@/components/ui/Container.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getProductUrl } from '@/lib/catalogue/routes';
+import { formatCardSpecs } from '@/lib/catalogue/specs';
+import { assertUniqueSlugs } from '@/lib/catalogue/slugs';
+import { sortProducts } from '@/lib/catalogue/sort';
+import { filterPublishedProducts } from '@/lib/catalogue/visibility';
+import { getBreadcrumbs } from '@/lib/navigation/breadcrumbs';
+import Button from '@/components/ui/Button.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import { getPrimaryCta } from '@/lib/navigation/cta';
+import { siteConfig } from '@/site.config';
+
+const allProducts = await getCollection('products');
+const visibleProducts = filterPublishedProducts(allProducts);
+const cableProducts = visibleProducts.filter(
+  (entry) => entry.data.category === 'cables',
+);
+assertUniqueSlugs(cableProducts);
+const products = sortProducts(cableProducts);
+const breadcrumbs = getBreadcrumbs('/cables/');
+const primaryCta = getPrimaryCta();
+---
+
+<BaseLayout
+  title={`Solar PV cable range | ${siteConfig.displayName}`}
+  description="Solar PV cable specifications from Era-Sure Renewables: single-core and twin-core options for South African solar installations. Request project pricing."
+  breadcrumbs={breadcrumbs}
+  robots={products.length === 0 ? 'noindex, follow' : undefined}
+>
+  <Section surface="muted" headingId="catalogue-heading">
+    <Container>
+      <header class="catalogue-header">
+        <Eyebrow>Technical specifications</Eyebrow>
+        <h1 id="catalogue-heading" class="catalogue-title">
+          Solar PV cable range
+        </h1>
+        <p class="catalogue-intro">
+          Standard cable specifications for solar PV installations. For bulk
+          drum requirements or unlisted variants, <a href="/products/cables/"
+            >view cable supply capability</a
+          > or request a quotation.
+        </p>
+      </header>
+      {
+        products.length === 0 ? (
+          <p class="catalogue-empty" role="status">
+            Solar PV cable specifications and availability are provided on
+            request. Contact Era-Sure to discuss project requirements.
+          </p>
+        ) : (
+          <div class="product-grid">
+            {products.map((entry) => {
+              const card = formatCardSpecs(entry.data);
+
+              return (
+                <ProductCard
+                  name={entry.data.name}
+                  href={getProductUrl(entry.data)}
+                  crossSection={card.crossSection}
+                  coreCount={card.coreCount}
+                  conductorMaterial={card.conductorMaterial}
+                  summary={entry.data.summary}
+                />
+              );
+            })}
+          </div>
+        )
+      }
+    </Container>
+  </Section>
+
+  {
+    primaryCta && (
+      <Section surface="inverted" headingId="cables-cta-heading">
+        <Container width="narrow">
+          <div class="cables-cta">
+            <h2 id="cables-cta-heading">
+              Request pricing for solar PV cable orders
+            </h2>
+            <p>
+              Submit your required cable sizes, lengths and drum quantities for
+              current project pricing.
+            </p>
+            <div>
+              <Button href={primaryCta.href}>{primaryCta.label}</Button>
+            </div>
+          </div>
+        </Container>
+      </Section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .catalogue-header {
+    display: grid;
+    gap: var(--space-3);
+    max-width: var(--measure);
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-background);
+  }
+
+  .catalogue-title {
+    overflow-wrap: anywhere;
+  }
+
+  .catalogue-intro {
+    max-width: var(--measure);
+    font-size: var(--font-size-md);
+  }
+
+  .catalogue-empty {
+    max-width: var(--measure);
+    margin-block-start: var(--space-4);
+    overflow-wrap: anywhere;
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--space-6);
+    margin-block-start: var(--space-6);
+    min-width: 0;
+  }
+
+  .cables-cta {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 48rem) {
+    .catalogue-header {
+      padding: var(--space-6);
+    }
+  }
+</style>

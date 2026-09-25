@@ -1,0 +1,273 @@
+# Pages CMS (https://pagescms.org) — the web editor for the site owner.
+#
+# Every save commits straight to `main`, and Netlify rebuilds the site. A save
+# that breaks validation in src/content.config.ts fails that build and the
+# previous version stays live, so the schema there is still the last line of
+# defence. This file only makes the common edits hard to get wrong.
+#
+# `merge: true` matters: without it, Pages CMS rewrites each file from the
+# fields listed here and silently drops anything else. Fields deliberately
+# left out below (slug, relatedRoute, videos) are therefore preserved, not
+# deleted — they are left out because editing them breaks URLs or needs files
+# the editor cannot upload.
+
+settings:
+  content:
+    merge: true
+  commit:
+    templates:
+      create: 'content: add {path} (via Pages CMS)'
+      update: 'content: update {path} (via Pages CMS)'
+      delete: 'content: delete {path} (via Pages CMS)'
+      rename: 'content: rename {oldPath} to {newPath} (via Pages CMS)'
+
+media:
+  - name: photos
+    label: Photos
+    input: src/assets/photography
+    # Written into the YAML exactly as the hand-authored entries already are;
+    # Astro's image() resolves the `@/` alias from tsconfig.json.
+    output: '@/assets/photography'
+    # Slugified names keep spaces and capitals out of image paths. HEIC is
+    # excluded on purpose: phones default to it and Astro cannot process it.
+    rename: safe
+    extensions: [jpg, jpeg, png, webp]
+
+content:
+  - name: categories
+    label: Product categories
+    type: collection
+    path: src/content/categories
+    format: yaml
+    exclude: [.gitkeep]
+    # The six categories are fixed routes linked from the navigation. A new or
+    # renamed file would be a new URL, which is a developer change.
+    operations:
+      create: false
+      rename: false
+      delete: false
+    view:
+      primary: name
+      fields: [name, status]
+      sort: [order, name]
+      default:
+        sort: order
+        order: asc
+    fields:
+      - name: name
+        label: Short name
+        type: string
+        required: true
+        description: Used on cards, menus and breadcrumbs. Keep it short.
+      - name: headline
+        label: Page heading
+        type: string
+        description: The big heading on the category page. Leave empty to use the short name.
+      - name: order
+        label: Position in lists
+        type: number
+        required: true
+        description: 1 appears first.
+      - name: status
+        type: select
+        required: true
+        description: Draft hides the whole category from the live site.
+        options:
+          values:
+            - name: published
+              label: Published
+            - name: draft
+              label: Draft (hidden)
+      - name: summary
+        type: text
+        required: true
+        description: One or two sentences. Also used as the Google search snippet.
+      - name: intro
+        label: Introduction
+        type: text
+        required: true
+      - name: rangeHeading
+        label: Heading above the item list
+        type: string
+        description: Leave empty for "The range includes".
+      - name: sourceItems
+        label: Items supplied
+        type: string
+        required: true
+        list:
+          min: 1
+      - name: typicalVariants
+        label: Typical variants
+        type: string
+        list: true
+      - name: brands
+        type: string
+        list: true
+      - name: seoTitle
+        label: Browser tab / Google title
+        type: string
+        description: Around 60 characters or fewer.
+      - name: cardImage
+        label: Card photo
+        type: image
+        description: The photo on this category's card on the home and products pages.
+        options:
+          media: photos
+      - name: galleryHeading
+        label: Gallery heading
+        type: string
+      - name: galleryIntro
+        label: Gallery introduction
+        type: text
+      - name: gallery
+        label: Gallery photos
+        type: object
+        description: Drag to reorder. Up to 30 photos.
+        list:
+          min: 1
+          max: 30
+          collapsible:
+            collapsed: true
+            summary: '{index}. {alt}'
+        fields:
+          - name: src
+            label: Photo
+            type: image
+            required: true
+            options:
+              media: photos
+          - name: alt
+            label: Description of the photo
+            type: text
+            required: true
+            description: Describe what is in the photo in one sentence, for Google and screen readers.
+          - name: caption
+            type: string
+            description: Optional line shown under the photo.
+          # Only client-owned is offered. A third-party (stock) photo also needs
+          # a licence credit block, which is a developer change — see
+          # src/assets/photography/THIRD_PARTY_IMAGES.md.
+          - name: provenance
+            label: Photo source
+            type: select
+            required: true
+            default: client-owned
+            options:
+              values:
+                - name: client-owned
+                  label: Era-Sure's own photo
+
+  - name: deliveries
+    label: Delivery highlights
+    type: collection
+    path: src/content/deliveries
+    format: yaml
+    exclude: [_example.yaml, _example]
+    filename:
+      template: '{fields.slug}.yaml'
+      field: false
+    view:
+      primary: title
+      fields: [title, status, location]
+      sort: [order, title]
+      default:
+        sort: order
+        order: asc
+    fields:
+      - name: title
+        type: string
+        required: true
+        description: Describe what was supplied or delivered. Do not claim Era-Sure installed it.
+      - name: slug
+        label: Web address
+        type: string
+        required: true
+        description: Lowercase words joined by hyphens, e.g. "limpopo-solar-farm-cable-supply". Becomes /deliveries/<web-address>/. Do not change it after publishing.
+        pattern:
+          regex: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          message: Use lowercase letters, numbers and single hyphens only.
+      - name: order
+        label: Position in lists
+        type: number
+        required: true
+        default: 1
+      - name: status
+        type: select
+        required: true
+        default: draft
+        options:
+          values:
+            - name: draft
+              label: Draft (hidden)
+            - name: published
+              label: Published
+      - name: publicationPermission
+        label: Customer permission
+        type: select
+        required: true
+        default: pending
+        description: Must be Confirmed before this can be published — covers both the photos and the project details.
+        options:
+          values:
+            - name: pending
+              label: Pending
+            - name: confirmed
+              label: Confirmed
+      - name: featured
+        label: Show on home page
+        type: boolean
+        default: false
+      - name: summary
+        type: text
+        required: true
+      - name: location
+        type: string
+        required: true
+        description: Province or broad area only, never a private site address.
+      - name: projectType
+        label: Project type
+        type: string
+        description: e.g. "Commercial solar supply".
+      - name: deliveryPeriod
+        label: When
+        type: string
+        description: e.g. "March 2026".
+      - name: suppliedItems
+        label: Items supplied
+        type: string
+        required: true
+        list:
+          min: 1
+      - name: images
+        label: Photos
+        type: object
+        list:
+          min: 1
+          max: 8
+          collapsible:
+            collapsed: true
+            summary: '{index}. {alt}'
+        fields:
+          - name: src
+            label: Photo
+            type: image
+            required: true
+            options:
+              media: photos
+              path: src/assets/photography/deliveries
+          - name: alt
+            label: Description of the photo
+            type: text
+            required: true
+          - name: caption
+            type: string
+      - name: socialUrl
+        label: Link to social media post
+        type: string
+        # No `pattern` here: Pages CMS validates an empty optional field against
+        # it too, which would block saving without a link. The build enforces
+        # https:// instead (secureUrl in src/content.config.ts).
+        description: Optional. Must start with https://
+      - name: photoCredit
+        label: Photo credit
+        type: string

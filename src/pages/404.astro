@@ -1,0 +1,48 @@
+---
+import Button from '@/components/ui/Button.astro';
+import Container from '@/components/ui/Container.astro';
+import Eyebrow from '@/components/ui/Eyebrow.astro';
+import Section from '@/components/ui/Section.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { siteConfig } from '@/site.config';
+---
+
+<BaseLayout
+  title={`Page not found | ${siteConfig.displayName}`}
+  description="The page you requested could not be found. Return to Era-Sure Renewables to browse solar cables, switchgear, combiners and electrical equipment."
+  robots="noindex, follow"
+>
+  <Section surface="muted" headingId="not-found-heading">
+    <Container width="narrow">
+      <div class="not-found-content">
+        <Eyebrow>Error 404</Eyebrow>
+        <h1 id="not-found-heading">Page not found</h1>
+        <p>
+          We could not find the page you requested. Use the links below to
+          navigate to available sections of the website.
+        </p>
+        <div class="not-found-actions">
+          <Button href="/">Return to home page</Button>
+          <Button href="/products/" variant="secondary">Browse products</Button>
+          <Button href="/contact/" variant="secondary">Contact us</Button>
+        </div>
+      </div>
+    </Container>
+  </Section>
+</BaseLayout>
+
+<style>
+  .not-found-content {
+    display: grid;
+    gap: var(--space-4);
+    max-width: var(--measure);
+  }
+
+  .not-found-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    margin-block-start: var(--space-2);
+  }
+</style>

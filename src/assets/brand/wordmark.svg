@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1229 324" fill="none">
+  <title>ERA-SURE RENEWABLES</title>
+  <defs>
+    <linearGradient id="wordmark-gradient" x1="0" y1="0" x2="0" y2="214" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0096B1" />
+      <stop offset="1" stop-color="#7DD956" />
+    </linearGradient>
+  </defs>
+
+  <g fill="url(#wordmark-gradient)">
+    <path d="M11 0h123v46l-10 10-23-22H56v45h33v33H56v68h45l23-22 10 10v45H22V33L0 12 11 0Z" />
+    <path fill-rule="evenodd" d="M171 0h100l23 22v68l-27 7-3 3 30 12v69l22 21-11 12-45-1v-78l-42-22h-3v100h-33V34l-22-22 11-12Zm45 34v45l44-11V34h-44Z" />
+    <path fill-rule="evenodd" d="M364 0l45 1 44 212h-34l-4-22h-36l-4 22h-33l28-177v-8l-17-18 11-10Zm31 93-11 64h24l-13-64Z" />
+    <path d="M479 79h112v34H479V79Z" />
+    <path d="M639 0h66l23 22v24l-10 10-23-22h-45v45l78 33v79l-22 22h-69l-21-22v-23l10-10 24 22h44v-46l-78-33V33L639 0Z" />
+    <path d="M764 0h45v180h45V0l34 1v190l-22 22h-69l-21-21V34l-22-21v-3l10-10Z" />
+    <path fill-rule="evenodd" d="M924 0h101l22 22v68l-30 8v2l30 12v68l22 21-11 13-45-1 1-78-43-22h-2v100h-34V33l-22-21 11-12Zm46 34-1 45 45-12-1-33h-43Z" />
+    <path d="M1106 0h123v46l-10 10-23-22h-45v45h33v33h-33v68h45l23-22 10 10v45h-112V33l-22-21 11-12Z" />
+  </g>
+
+  <g transform="translate(304 232) scale(1.15)" fill="#10242B">
+    <path fill-rule="evenodd" d="M0 0h30l10 10v20l-8 8 11 32H28L18 42h-4v28H0V0Zm14 12v18h11l3-3V15l-3-3H14Z" />
+    <path transform="translate(54)" d="M0 0h40v12H14v16h20v12H14v18h26v12H0V0Z" />
+    <path transform="translate(105)" d="M0 70V0h14l16 42V0h14v70H30L14 28v42H0Z" />
+    <path transform="translate(160)" d="M0 0h40v12H14v16h20v12H14v18h26v12H0V0Z" />
+    <path transform="translate(211)" d="M0 0h14l5 48 6-30h12l6 30 5-48h14l-9 70H39l-8-27-8 27H9L0 0Z" />
+    <path transform="translate(284)" fill-rule="evenodd" d="M0 70 12 0h23l13 70H34l-2-15H15l-2 15H0Zm18-27h12l-6-31-6 31Z" />
+    <path transform="translate(343)" fill-rule="evenodd" d="M0 0h28l12 10v19l-7 6 9 7v18L32 70H0V0Zm14 12v17h10l3-3V15l-3-3H14Zm0 29v17h12l3-3V45l-3-4H14Z" />
+    <path transform="translate(396)" d="M0 0h14v58h26v12H0V0Z" />
+    <path transform="translate(447)" d="M0 0h40v12H14v16h20v12H14v18h26v12H0V0Z" />
+    <path transform="translate(498)" d="M7 0h27l8 8v9l-9 5-6-10H14v16h19l9 9v23L32 70H7l-7-7V52l9-4 6 10h13V40H9l-9-9V9L7 0Z" />
+  </g>
+</svg>

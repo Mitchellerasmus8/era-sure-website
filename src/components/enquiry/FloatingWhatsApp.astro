@@ -1,0 +1,167 @@
+---
+import type { SalesContactLink } from '@/lib/config/sales-contacts';
+
+interface Props {
+  contact: SalesContactLink;
+}
+
+const { contact } = Astro.props;
+
+/* The visible label and the accessible name are deliberately the same string.
+   The label is hidden below 48rem and `aria-hidden` above it, so the name has
+   to live on the anchor either way — and WCAG 2.5.3 wants the name to contain
+   the visible words, which is free if they are simply identical. */
+const label = 'Get a quote on WhatsApp';
+---
+
+<a
+  class="floating-whatsapp"
+  href={contact.whatsAppHref}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label={label}
+  data-floating-whatsapp
+>
+  <span class="floating-whatsapp__label" aria-hidden="true">{label}</span>
+  <span class="floating-whatsapp__disc">
+    <!-- WhatsApp's own mark, not a redrawing of it. An approximation reads as a
+         generic chat bubble at this size, and Meta's brand guidance asks that the
+         logo not be recreated — so the official geometry is both the clearer and
+         the more compliant choice. Only the fill colour departs from the brand
+         sheet, for the contrast reason in the token comment. -->
+    <svg class="floating-whatsapp__icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.297-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"
+      ></path>
+    </svg>
+  </span>
+</a>
+
+<style>
+  .floating-whatsapp {
+    position: fixed;
+    z-index: 20;
+    inset-inline-end: max(var(--space-4), env(safe-area-inset-right));
+    inset-block-end: max(var(--space-4), env(safe-area-inset-bottom));
+    display: inline-flex;
+    text-decoration: none;
+    transition: transform 150ms ease;
+  }
+
+  .floating-whatsapp__disc {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-social-whatsapp);
+    box-shadow: 0 0.75rem 1.75rem rgb(11 37 48 / 28%);
+    color: var(--color-social-whatsapp-ink);
+    transition: box-shadow 150ms ease;
+  }
+
+  /* Neither the fill nor the glyph colour moves on hover — see the token
+     comment: all three measured pairs sit close enough to the floor that
+     there is no headroom to shift the green. Elevation and the lift carry
+     the state instead, which is the standard FAB treatment anyway. */
+  .floating-whatsapp:hover .floating-whatsapp__disc,
+  .floating-whatsapp:focus-visible .floating-whatsapp__disc {
+    box-shadow: 0 1rem 2rem rgb(11 37 48 / 34%);
+  }
+
+  .floating-whatsapp:hover {
+    transform: translateY(-0.15rem);
+  }
+
+  .floating-whatsapp:active {
+    transform: translateY(0);
+  }
+
+  .floating-whatsapp:active .floating-whatsapp__disc {
+    box-shadow: 0 0.5rem 1.25rem rgb(11 37 48 / 30%);
+  }
+
+  .floating-whatsapp:focus-visible {
+    outline: 0.2rem solid var(--color-focus);
+    outline-offset: 0.15rem;
+    border-radius: var(--radius-pill);
+  }
+
+  .floating-whatsapp__icon {
+    width: 2rem;
+    height: 2rem;
+    fill: currentColor;
+  }
+
+  /* Hidden outright on phones rather than merely collapsed. The button already
+     sits on every page; a permanent pill here would cover roughly 60% of a
+     375px viewport for the whole session, over the catalogue copy it is meant
+     to support. */
+  .floating-whatsapp__label {
+    display: none;
+  }
+
+  @media (min-width: 48rem) {
+    .floating-whatsapp {
+      inset-inline-end: max(var(--space-6), env(safe-area-inset-right));
+      inset-block-end: max(var(--space-6), env(safe-area-inset-bottom));
+    }
+
+    /* Absolute, not in flow: an in-flow label would widen the anchor's hit area
+       leftwards even while invisible, swallowing clicks on the page beneath it.
+       `visibility` is transitioned alongside opacity so the collapsed label is
+       untargetable rather than merely transparent. */
+    .floating-whatsapp__label {
+      position: absolute;
+      inset-inline-end: 100%;
+      inset-block-start: 50%;
+      display: block;
+      margin-inline-end: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-pill);
+      background: var(--color-surface-inverted);
+      box-shadow: 0 0.75rem 1.75rem rgb(11 37 48 / 28%);
+      color: var(--color-text-inverted);
+      font-size: var(--font-size-sm);
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transform: translate(0.5rem, -50%);
+      transition:
+        opacity 150ms ease,
+        transform 150ms ease,
+        visibility 150ms;
+    }
+
+    .floating-whatsapp:hover .floating-whatsapp__label,
+    .floating-whatsapp:focus-visible .floating-whatsapp__label {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(0, -50%);
+    }
+  }
+
+  /* Matches `Button`: the transition is dropped AND the transform is zeroed.
+     Killing only the transition leaves the lift, applied instantly. The label
+     still appears — it snaps in rather than sliding. */
+  @media (prefers-reduced-motion: reduce) {
+    .floating-whatsapp,
+    .floating-whatsapp__disc,
+    .floating-whatsapp__label {
+      transition: none;
+    }
+
+    .floating-whatsapp:hover,
+    .floating-whatsapp:active {
+      transform: none;
+    }
+
+    .floating-whatsapp__label,
+    .floating-whatsapp:hover .floating-whatsapp__label,
+    .floating-whatsapp:focus-visible .floating-whatsapp__label {
+      transform: translate(0, -50%);
+    }
+  }
+</style>

@@ -1,0 +1,362 @@
+---
+import BrandLogo from '@/components/layout/BrandLogo.astro';
+import Container from '@/components/ui/Container.astro';
+import { buildContactDetails, type ContactDetails } from '@/lib/config/contact';
+import type { NavItem } from '@/lib/navigation/nav';
+import { siteConfig } from '@/site.config';
+
+interface Props {
+  content?: ContactDetails;
+  navItems: NavItem[];
+}
+
+const { content = buildContactDetails(siteConfig), navItems } = Astro.props;
+const copyrightYear = new Date().getFullYear();
+const footerLinks = [
+  ...navItems,
+  { label: 'Request a quote', href: '/quote/' },
+];
+const hasDetails =
+  content.contactGroups.length > 0 ||
+  content.emails.length > 0 ||
+  content.hubs.length > 0 ||
+  content.businessHours.length > 0 ||
+  Boolean(content.supportNote) ||
+  content.serviceAreas.length > 0 ||
+  content.registration.length > 0 ||
+  content.socialLinks.length > 0;
+---
+
+<footer class="site-footer">
+  <Container>
+    <div class="site-footer__inner">
+      <div class="site-footer__top">
+        <div class="site-footer__brand">
+          <BrandLogo size="footer" />
+          <p>
+            Electrical and renewable-energy equipment for contractors,
+            installers and project teams across South Africa.
+          </p>
+        </div>
+
+        <nav
+          class="site-footer__navigation"
+          aria-labelledby="footer-quick-links-heading"
+        >
+          <h2 id="footer-quick-links-heading">Quick links</h2>
+          <ul>
+            {
+              footerLinks.map((item) => (
+                <li>
+                  <a href={item.href}>{item.label}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
+
+      {
+        hasDetails && (
+          <div class="site-footer__groups">
+            {content.contactGroups.map((group) => (
+              <section
+                class="site-footer__group"
+                aria-labelledby={`footer-contact-${group.id}-heading`}
+              >
+                <h2 id={`footer-contact-${group.id}-heading`}>
+                  {group.heading}
+                </h2>
+                <ul>
+                  {group.details.map((detail) => (
+                    <li>
+                      <span>{detail.label}: </span>
+                      {detail.href ? (
+                        <a href={detail.href}>{detail.value}</a>
+                      ) : (
+                        detail.value
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+
+            {content.emails.length > 0 && (
+              <section
+                class="site-footer__group"
+                aria-labelledby="footer-emails-heading"
+              >
+                <h2 id="footer-emails-heading">Email</h2>
+                <ul>
+                  {content.emails.map((detail) => (
+                    <li>
+                      <span>{detail.label}: </span>
+                      {detail.href ? (
+                        <a href={detail.href}>{detail.value}</a>
+                      ) : (
+                        detail.value
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {content.hubs.length > 0 && (
+              <section
+                class="site-footer__group"
+                aria-labelledby="footer-hubs-heading"
+              >
+                <h2 id="footer-hubs-heading">Regional bases</h2>
+                <ul>
+                  {content.hubs.map((hub) => (
+                    <li>{hub}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {(content.businessHours.length > 0 || content.supportNote) && (
+              <section
+                class="site-footer__group"
+                aria-labelledby="footer-hours-heading"
+              >
+                <h2 id="footer-hours-heading">Business hours</h2>
+                {content.businessHours.length > 0 && (
+                  <dl>
+                    {content.businessHours.map((detail) => (
+                      <div>
+                        <dt>{detail.label}</dt>
+                        <dd>{detail.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                {content.supportNote && <p>{content.supportNote}</p>}
+              </section>
+            )}
+
+            {content.serviceAreas.length > 0 && (
+              <section
+                class="site-footer__group"
+                aria-labelledby="footer-service-areas-heading"
+              >
+                <h2 id="footer-service-areas-heading">Service areas</h2>
+                <ul>
+                  {content.serviceAreas.map((area) => (
+                    <li>{area}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {content.socialLinks.length > 0 && (
+              <section
+                class="site-footer__group"
+                aria-labelledby="footer-social-heading"
+              >
+                <h2 id="footer-social-heading">Social profiles</h2>
+                <ul>
+                  {content.socialLinks.map((socialLink) => (
+                    <li>
+                      <a href={socialLink.href}>{socialLink.platform}</a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {content.registration.length > 0 && (
+              <section
+                class="site-footer__group site-footer__registration"
+                aria-labelledby="footer-registration-heading"
+              >
+                <h2 id="footer-registration-heading">Registration</h2>
+                <ul>
+                  {content.registration.map((detail) => (
+                    <li>
+                      <span>{detail.label}: </span>
+                      {detail.value}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+        )
+      }
+
+      <div class="site-footer__bottom">
+        <p class="site-footer__copyright">
+          {`© ${copyrightYear} ${siteConfig.displayName}. All rights reserved.`}
+        </p>
+        <p class="site-footer__legal">
+          <a href="/privacy/">Privacy notice</a>
+        </p>
+      </div>
+    </div>
+  </Container>
+</footer>
+
+<style>
+  .site-footer {
+    border-block-start: 1px solid var(--color-border);
+    background: var(--color-background);
+    color: var(--color-text);
+  }
+
+  .site-footer__inner {
+    min-width: 0;
+    padding-block: var(--space-7);
+    padding-block-end: calc(var(--space-7) + var(--space-6));
+  }
+
+  .site-footer__top {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .site-footer__brand {
+    display: grid;
+    gap: var(--space-3);
+    max-width: var(--measure);
+  }
+
+  .site-footer__brand p {
+    color: var(--color-text-muted);
+  }
+
+  .site-footer__navigation {
+    min-width: 0;
+  }
+
+  .site-footer__navigation h2 {
+    margin-block-end: var(--space-3);
+    font-size: var(--font-size-md);
+  }
+
+  .site-footer__navigation ul {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* 32px tall. The row height is set by the WCAG 2.2 AA target floor of 24px
+     and nothing else, so the only question is how much clearance to buy over
+     it. This has come down twice: 48px plus a gap, then 40px, now 32px — the
+     first two still read as sprawl beside the detail columns below, whose rows
+     sit at `--space-1`. 32px keeps a third more than the floor while closing
+     the gap that made five short links look like an unrelated list. Do not take
+     it to 24px: that is the floor exactly, and the line box would be the whole
+     target. */
+  .site-footer__navigation a {
+    display: block;
+    padding-block: var(--space-1);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .site-footer__navigation a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+
+  .site-footer__groups {
+    display: grid;
+    gap: var(--space-5);
+    margin-block: var(--space-5);
+    padding-block-start: var(--space-5);
+    border-block-start: 1px solid var(--color-border);
+  }
+
+  .site-footer__group {
+    min-width: 0;
+  }
+
+  .site-footer__group h2 {
+    margin-block-end: var(--space-2);
+    font-size: var(--font-size-md);
+  }
+
+  .site-footer__group ul {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__group li,
+  .site-footer__group dd,
+  .site-footer__group p {
+    overflow-wrap: anywhere;
+  }
+
+  .site-footer__group dl {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .site-footer__group dl > div {
+    min-width: 0;
+  }
+
+  .site-footer__group dt {
+    font-weight: 700;
+  }
+
+  .site-footer__group dd {
+    margin-inline-start: 0;
+    color: var(--color-text-muted);
+  }
+
+  .site-footer__group p {
+    color: var(--color-text-muted);
+  }
+
+  .site-footer__registration {
+    grid-column: 1 / -1;
+  }
+
+  .site-footer__registration ul {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-5);
+    padding-block-start: var(--space-4);
+    border-block-start: 1px solid var(--color-border);
+  }
+
+  .site-footer__copyright,
+  .site-footer__legal {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .site-footer__legal a {
+    display: inline-block;
+    padding-block: var(--space-1);
+    font-weight: 600;
+  }
+
+  @media (min-width: 48rem) {
+    .site-footer__top {
+      grid-template-columns: minmax(0, 1fr) minmax(10rem, auto);
+    }
+
+    /* auto-fit rather than a fixed three: eight groups across three columns
+       left a ragged final row with a one-line group stranded beside it. */
+    .site-footer__groups {
+      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    }
+  }
+</style>

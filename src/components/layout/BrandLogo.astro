@@ -1,0 +1,174 @@
+---
+import wordmark from '@/assets/brand/wordmark.svg';
+import { siteConfig } from '@/site.config';
+
+interface Props {
+  size?: 'header' | 'footer';
+}
+
+const { size = 'header' } = Astro.props;
+
+/**
+ * The mark is inlined rather than loaded from `@/assets/brand/favicon.svg` as an
+ * `<img>`, because the glow has to land on the bolt and not on the tile behind
+ * it. A filter on an `<img>` can only see one opaque rounded rectangle, so it
+ * haloes the square; reaching the path means having the path in the document.
+ *
+ * That makes the ids document-scoped, and this component renders twice per page
+ * (header and footer). Duplicate ids are invalid and both references would
+ * resolve to whichever came first — harmless here only by luck, since the two
+ * instances define identical gradients. Namespacing by `size` keeps it correct
+ * rather than coincidental.
+ */
+const gradientId = `brand-mark-gradient-${size}`;
+const glowId = `brand-mark-glow-${size}`;
+
+/** Kept in sync with src/assets/brand/favicon.svg. */
+const boltPath = 'M39 5 15 35h14l-5 24 26-34H36L39 5Z';
+---
+
+<a
+  class:list={['brand-logo', `brand-logo--${size}`]}
+  href="/"
+  aria-label={`${siteConfig.displayName} home`}
+>
+  <svg class="brand-logo__mark" viewBox="0 0 64 64" aria-hidden="true">
+    <defs>
+      <linearGradient
+        id={gradientId}
+        x1="18"
+        y1="8"
+        x2="44"
+        y2="56"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stop-color="#0096B1"></stop>
+        <stop offset="1" stop-color="#7DD956"></stop>
+      </linearGradient>
+      <!-- stdDeviation is in view-box units, so the halo scales with the mark
+           and stays the same at 2.55rem in the header and 3rem in the footer.
+           The region is widened because the default (-10%/+120% of the bounding
+           box) crops a blur this soft.
+
+           The alpha boost is not optional. A bolt is a thin shape, so blurring
+           it spreads what little coverage it has across a much larger area and
+           leaves an alpha too low to see against the tile — measured at four
+           parts in 255, which is nothing. `feFuncA` scales that back up.
+
+           Both numbers were picked by rendering the sweep and looking at it,
+           and the ceiling on each is the bolt's own silhouette. Past a slope of
+           about 2.2, or a deviation of about 2.5, the halo is bright or wide
+           enough to swallow the crisp copy drawn over it, and the mark stops
+           reading as a sharp bolt that glows and starts reading as a blurred
+           one. These sit a step under both. -->
+      <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="1.8"></feGaussianBlur>
+        <feComponentTransfer>
+          <feFuncA type="linear" slope="1.4"></feFuncA>
+        </feComponentTransfer>
+      </filter>
+    </defs>
+
+    <rect width="64" height="64" rx="14" fill="#0B2530"></rect>
+
+    <!-- The glow is a blurred copy of the bolt drawn underneath the crisp one,
+         rather than a filter on the bolt itself. Opacity animates cheaply and
+         predictably; `stdDeviation` does neither. -->
+    <path
+      class="brand-logo__bolt-glow"
+      d={boltPath}
+      fill={`url(#${gradientId})`}
+      filter={`url(#${glowId})`}></path>
+    <path class="brand-logo__bolt" d={boltPath} fill={`url(#${gradientId})`}
+    ></path>
+  </svg>
+  <img
+    class="brand-logo__wordmark"
+    src={wordmark.src}
+    width={wordmark.width}
+    height={wordmark.height}
+    alt=""
+    decoding="async"
+  />
+</a>
+
+<style>
+  .brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    min-width: 0;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .brand-logo--header {
+    max-width: 12.5rem;
+  }
+
+  .brand-logo--footer {
+    max-width: 14rem;
+  }
+
+  .brand-logo__mark {
+    display: block;
+    flex: 0 0 auto;
+    width: 2.55rem;
+    height: 2.55rem;
+    /* The blurred copy is drawn inside the tile, so without this the halo is
+       clipped square at the mark's edge instead of fading past the corners. */
+    overflow: visible;
+  }
+
+  .brand-logo--footer .brand-logo__mark {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .brand-logo__bolt-glow {
+    animation: brand-bolt-glow 3.4s ease-in-out infinite;
+  }
+
+  .brand-logo:hover .brand-logo__bolt-glow,
+  .brand-logo:focus-visible .brand-logo__bolt-glow {
+    animation-duration: 1.8s;
+  }
+
+  /* Low amplitude on purpose. This mark sits in the header of every page, where
+     a glow with the hero logo's contrast would be a moving object competing with
+     the navigation for the whole visit. */
+  @keyframes brand-bolt-glow {
+    0%,
+    100% {
+      opacity: 0.45;
+    }
+
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .brand-logo__wordmark {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 9.25rem;
+    height: auto;
+    min-width: 0;
+  }
+
+  .brand-logo--footer .brand-logo__wordmark {
+    max-width: 10.25rem;
+  }
+
+  .brand-logo:hover {
+    color: var(--color-text);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand-logo__bolt-glow {
+      animation: none;
+      opacity: 0.8;
+    }
+  }
+</style>
