@@ -990,7 +990,11 @@ spam filtering and file upload included.
 
 The provider is deliberately contained in
 `src/components/enquiry/QuoteForm.astro`: the Netlify attributes, hidden `form-name`,
-honeypot, multipart encoding and success action all live there.
+honeypot, multipart encoding and success action all live there. So does the hidden
+`subject` field: Netlify uses it as the notification email's subject, overriding any subject
+set in the Netlify UI, and a small script fills in the company name
+("New quote request: Sunridge Solar (Pty) Ltd"). Without JavaScript the static fallback is
+sent. It repeats a listed field, so the inventory comparison below excludes it.
 
 **The field contract has a second consumer, so it lives in `src/lib/enquiry/`.**
 `personal-data.ts` describes what each control collects and why; `/privacy/` renders its

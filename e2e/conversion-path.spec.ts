@@ -64,24 +64,28 @@ test('a category CTA reaches the quote form', async ({ page }) => {
     page.getByLabel('Attach a bill of quantities or product list (optional)'),
   ).toHaveAttribute('type', 'file');
 
+  // Technical fields, not personal data the visitor supplies: Netlify's form
+  // name, the spam honeypot, and the email subject, which only repeats the
+  // company name already listed in the inventory.
+  const technicalFields = ['form-name', 'website', 'subject'];
   const actualFields = await form
     .locator('input, select, textarea')
-    .evaluateAll((controls) =>
-      controls
-        .filter(
-          (control) =>
-            control.getAttribute('name') !== 'form-name' &&
-            control.getAttribute('name') !== 'website',
-        )
-        .map((control) => {
-          const accept = control.getAttribute('accept');
+    .evaluateAll(
+      (controls, excluded) =>
+        controls
+          .filter(
+            (control) => !excluded.includes(control.getAttribute('name') ?? ''),
+          )
+          .map((control) => {
+            const accept = control.getAttribute('accept');
 
-          return {
-            name: control.getAttribute('name') ?? '',
-            required: (control as HTMLInputElement).required,
-            ...(accept !== null ? { accept } : {}),
-          };
-        }),
+            return {
+              name: control.getAttribute('name') ?? '',
+              required: (control as HTMLInputElement).required,
+              ...(accept !== null ? { accept } : {}),
+            };
+          }),
+      technicalFields,
     );
 
   expect(actualFields).toEqual(
@@ -96,6 +100,21 @@ test('a category CTA reaches the quote form', async ({ page }) => {
   await expect(
     collectionStatement.getByRole('link', { name: 'privacy notice' }),
   ).toHaveAttribute('href', '/privacy/');
+});
+
+test('the quote notification subject names the company', async ({ page }) => {
+  await page.goto('/quote/');
+
+  const subject = page.locator('input[name="subject"]');
+  await expect(subject).toHaveValue('New quote request – Era-Sure website');
+
+  await page.getByLabel('Company').fill('  Sunridge   Solar (Pty) Ltd ');
+  await expect(subject).toHaveValue(
+    'New quote request: Sunridge Solar (Pty) Ltd',
+  );
+
+  await page.getByLabel('Company').fill('');
+  await expect(subject).toHaveValue('New quote request – Era-Sure website');
 });
 
 test('the contact page exposes distinct WhatsApp and phone links', async ({

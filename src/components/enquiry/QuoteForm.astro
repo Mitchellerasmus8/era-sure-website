@@ -12,6 +12,19 @@ import { siteConfig } from '@/site.config';
   enctype="multipart/form-data"
 >
   <input type="hidden" name="form-name" value="quote-request" />
+  {
+    /*
+    Netlify uses a field named `subject` as the notification email's subject,
+    and it overrides any subject set in the Netlify UI. The script below adds
+    the company name; without JavaScript this static value is sent instead.
+  */
+  }
+  <input
+    type="hidden"
+    name="subject"
+    value="New quote request – Era-Sure website"
+    data-quote-subject
+  />
   <p class="quote-form__honeypot" aria-hidden="true">
     <label>
       Leave this field empty
@@ -161,6 +174,29 @@ import { siteConfig } from '@/site.config';
       fileError.textContent = '';
     });
     validateAttachment();
+  }
+
+  const subjectInput = document.querySelector<HTMLInputElement>(
+    '[data-quote-subject]',
+  );
+  const companyInput =
+    document.querySelector<HTMLInputElement>('#quote-company');
+  if (subjectInput && companyInput) {
+    const fallbackSubject = subjectInput.value;
+    // Kept current on every keystroke rather than only on submit, so the value
+    // is already right whichever way the browser builds the submission.
+    const updateSubject = () => {
+      const company = companyInput.value.replace(/\s+/g, ' ').trim();
+      subjectInput.value = company
+        ? `New quote request: ${company.slice(0, 80)}`
+        : fallbackSubject;
+    };
+    companyInput.addEventListener('input', updateSubject);
+    companyInput.form?.addEventListener('submit', updateSubject);
+    companyInput.form?.addEventListener('reset', () => {
+      subjectInput.value = fallbackSubject;
+    });
+    updateSubject();
   }
 </script>
 
