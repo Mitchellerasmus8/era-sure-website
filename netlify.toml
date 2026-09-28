@@ -31,13 +31,14 @@
 # No apex-to-www rule appears here on purpose: `www.erasuretrading.co.za` is the
 # primary domain in Netlify, so Netlify issues the apex 301 itself. Verified.
 #
-# CORRECTION (2026-08-26): an earlier version of this comment also claimed
-# Netlify 301s the `*.netlify.app` subdomain to the primary domain. It does
-# NOT — that host returned 200 and served the whole site. It matters more now
-# than it did, because removing the site-wide X-Robots-Tag also removed the
-# only thing keeping that host out of search. Hence the rule below.
+# Netlify does NOT 301 the project's own `*.netlify.app` address to the primary
+# domain: that host returns 200 and serves the whole site, which lets Google
+# index a duplicate copy. Hence the rule below. It names this project's
+# address, so update it if the Netlify project is ever renamed or recreated.
+# Deploy previews and branch deploys use `<prefix>--era-sure.netlify.app`, a
+# different host, so they are unaffected.
 [[redirects]]
-  from = "https://eclectic-snickerdoodle-89bb05.netlify.app/*"
+  from = "https://era-sure.netlify.app/*"
   to = "https://www.erasuretrading.co.za/:splat"
   status = 301
   force = true
