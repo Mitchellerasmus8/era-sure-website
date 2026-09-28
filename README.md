@@ -5,6 +5,7 @@
 The website of Era-Sure Trading (Pty) Ltd, a supplier of electrical and renewable-energy
 equipment. It is a **sales-led supplier site**: its job is to turn trade visitors into
 quote requests, calls and WhatsApp messages, not to publish a product database.
+for netlify
 
 It is a static [Astro](https://astro.build) site, hosted on Netlify and rebuilt
 automatically whenever this repository's `main` branch changes.
